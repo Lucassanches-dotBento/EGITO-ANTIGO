@@ -35,6 +35,7 @@ export const BOOTSTRAPPED_ADMINS: { name: string; email: string }[] = [
   { name: 'Lucas', email: '20261ac0080020@estudantes.ifpr.edu.br' },
   { name: 'Bento', email: '20261ac0080019@estudantes.ifpr.edu.br' },
   { name: 'Mikael', email: '20261ac0080070@estudantes.ifpr.edu.br' },
+  { name: 'Kethellyn', email: '20261ac0080030@estudantes.ifpr.edu.br' },
 ];
 
 export function isBootstrappedAdminEmail(email: string | null | undefined): boolean {

@@ -30,7 +30,8 @@ service cloud.firestore {
         && request.auth.token.email in [
           '20261ac0080020@estudantes.ifpr.edu.br',
           '20261ac0080019@estudantes.ifpr.edu.br',
-          '20261ac0080070@estudantes.ifpr.edu.br'
+          '20261ac0080070@estudantes.ifpr.edu.br',
+          '20261ac0080030@estudantes.ifpr.edu.br'
         ];
     }
 

@@ -1,6 +1,5 @@
-import { User } from 'firebase/auth';
 import { RotateCcw, ShieldCheck, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   adminResetUserStats,
   adminSetUserRole,
@@ -10,10 +9,20 @@ import {
   UserProfileData,
 } from '../firebase';
 import { CHAMBERS, Language, translateToHieroglyphs } from '../game/data';
+import {
+  listServerUsers,
+  resetServerUserStats,
+  serverAccountToProfile,
+  setServerUserRole,
+} from '../lib/serverAuth';
 
 interface AdminPanelModalProps {
   lang: Language;
-  currentUser: User;
+  authMode: 'firebase' | 'server';
+  currentUid: string;
+  currentEmail: string;
+  currentEmailVerified: boolean;
+  serverToken?: string | null;
   onStartFromChamber: (chamberIndex: number) => void;
   onClose: () => void;
 }
@@ -101,22 +110,43 @@ const ADMIN_COPY: Record<
 
 export function AdminPanelModal({
   lang,
-  currentUser,
+  authMode,
+  currentUid,
+  currentEmail,
+  currentEmailVerified,
+  serverToken,
   onStartFromChamber,
   onClose,
 }: AdminPanelModalProps) {
   const c = ADMIN_COPY[lang];
   const [users, setUsers] = useState<UserProfileData[]>([]);
   const [busyUid, setBusyUid] = useState<string | null>(null);
-  const canListAll = isBootstrappedAdminEmail(currentUser.email) && currentUser.emailVerified;
+  const canListAll =
+    authMode === 'server'
+      ? Boolean(serverToken)
+      : isBootstrappedAdminEmail(currentEmail) && currentEmailVerified;
+
+  const refreshServerUsers = useCallback(async () => {
+    if (authMode !== 'server' || !serverToken) return;
+    try {
+      const res = await listServerUsers(serverToken);
+      setUsers(res.users.map(serverAccountToProfile));
+    } catch (err) {
+      console.error('Failed to list server users:', err);
+    }
+  }, [authMode, serverToken]);
 
   useEffect(() => {
     if (!canListAll) return;
+    if (authMode === 'server') {
+      refreshServerUsers();
+      return;
+    }
     const unsub = subscribeAllUsers((list) => {
       setUsers(list);
     });
     return () => unsub();
-  }, [canListAll]);
+  }, [canListAll, authMode, refreshServerUsers]);
 
   const totalRuns = users.reduce((sum, u) => sum + (u.gamesPlayed || 0), 0);
   const topScore = users.reduce((max, u) => Math.max(max, u.bestScore || 0), 0);
@@ -124,11 +154,17 @@ export function AdminPanelModal({
   async function handleToggleRole(u: UserProfileData) {
     setBusyUid(u.uid);
     try {
-      await adminSetUserRole({
-        targetUser: u,
-        nextRole: u.role === 'admin' ? 'player' : 'admin',
-        grantedByUid: currentUser.uid,
-      });
+      const nextRole = u.role === 'admin' ? 'player' : 'admin';
+      if (authMode === 'server' && serverToken) {
+        await setServerUserRole(serverToken, u.uid, nextRole);
+        await refreshServerUsers();
+      } else {
+        await adminSetUserRole({
+          targetUser: u,
+          nextRole,
+          grantedByUid: currentUid,
+        });
+      }
     } finally {
       setBusyUid(null);
     }
@@ -137,7 +173,12 @@ export function AdminPanelModal({
   async function handleReset(u: UserProfileData) {
     setBusyUid(u.uid);
     try {
-      await adminResetUserStats(u.uid);
+      if (authMode === 'server' && serverToken) {
+        await resetServerUserStats(serverToken, u.uid);
+        await refreshServerUsers();
+      } else {
+        await adminResetUserStats(u.uid);
+      }
     } finally {
       setBusyUid(null);
     }
@@ -173,7 +214,7 @@ export function AdminPanelModal({
           {/* Founding Admins Row */}
           <div>
             <h3 className="text-xs font-semibold text-amber-300 mb-2.5">{c.foundersTitle}</h3>
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {BOOTSTRAPPED_ADMINS.map((founder) => {
                 const matched = users.find(
                   (u) => u.email.toLowerCase() === founder.email.toLowerCase()

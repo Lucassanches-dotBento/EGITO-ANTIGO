@@ -165,8 +165,8 @@ export class PyramidGameEngine {
   private pvy = 0;
   private pRadius = 18;
   private pFacing = -Math.PI / 2;
-  private hp = 5;
-  private maxHp = 5;
+  private hp = 4;
+  private maxHp = 4;
   private invulnTimer = 0;
   private hitFlashTimer = 0;
   private pulseCooldown = 0;
@@ -176,7 +176,7 @@ export class PyramidGameEngine {
   private dashDirY = -1;
   private squashX = 1;
   private squashY = 1;
-  private divineEnergy = 100;
+  private divineEnergy = 65;
 
   // God active buff timers
   private bastetTimer = 0;
@@ -411,8 +411,9 @@ export class PyramidGameEngine {
     const safeIdx = Math.max(0, Math.min(CHAMBERS.length - 1, startChamberIndex));
     this.score = 0;
     this.orderedCombos = 0;
-    this.maxHp = 5;
-    this.hp = 5;
+    this.maxHp = 4;
+    this.hp = 4;
+    this.divineEnergy = 65;
     this.relics = [];
     this.chamberIndex = safeIdx;
     this.loadChamber(safeIdx);
@@ -466,12 +467,12 @@ export class PyramidGameEngine {
     this.pvx = 0;
     this.pvy = 0;
     this.pFacing = -Math.PI / 2;
-    this.invulnTimer = 0.8;
+    this.invulnTimer = 0.55;
     this.hitFlashTimer = 0;
     this.pulseCooldown = 0;
     this.dashCooldown = 0;
     this.dashTimer = 0;
-    this.divineEnergy = 100;
+    this.divineEnergy = Math.max(this.divineEnergy, 65);
     this.bastetTimer = 0;
     this.raOrbitTimer = 0;
     this.osirisAuraTimer = 0;
@@ -522,8 +523,8 @@ export class PyramidGameEngine {
         y: slot.y,
         w: 64,
         h: 64,
-        cycleTimer: i * 0.9,
-        period: 3.2,
+        cycleTimer: i * 0.65,
+        period: 2.5,
         state: 'idle',
       });
     }
@@ -560,6 +561,7 @@ export class PyramidGameEngine {
     // Spawn Enemies away from player start
     const spawnEnemy = (kind: Enemy['kind'], x: number, y: number) => {
       if (kind === 'scarab') {
+        const scarabHp = 2 + Math.floor(idx / 3);
         this.enemies.push({
           id: this.nextEnemyId++,
           kind,
@@ -568,12 +570,12 @@ export class PyramidGameEngine {
           vx: 0,
           vy: 0,
           r: 14,
-          hp: 2,
-          maxHp: 2,
-          speed: 118 + idx * 8,
+          hp: scarabHp,
+          maxHp: scarabHp,
+          speed: 145 + idx * 12,
           hitFlash: 0,
           slowTimer: 0,
-          aiTimer: 0.8 + Math.random() * 1.4,
+          aiTimer: 0.6 + Math.random() * 1.0,
           telegraphTimer: 0,
           chargeDirX: 0,
           chargeDirY: 0,
@@ -581,6 +583,7 @@ export class PyramidGameEngine {
           squash: 1,
         });
       } else if (kind === 'mummy') {
+        const mummyHp = 5 + Math.floor(idx / 2);
         this.enemies.push({
           id: this.nextEnemyId++,
           kind,
@@ -589,12 +592,12 @@ export class PyramidGameEngine {
           vx: 0,
           vy: 0,
           r: 20,
-          hp: 4,
-          maxHp: 4,
-          speed: 78 + idx * 6,
+          hp: mummyHp,
+          maxHp: mummyHp,
+          speed: 98 + idx * 9,
           hitFlash: 0,
           slowTimer: 0,
-          aiTimer: 1.5 + Math.random() * 1.2,
+          aiTimer: 1.1 + Math.random() * 0.9,
           telegraphTimer: 0,
           chargeDirX: 0,
           chargeDirY: 0,
@@ -602,6 +605,7 @@ export class PyramidGameEngine {
           squash: 1,
         });
       } else if (kind === 'obelisk') {
+        const obeliskHp = 6 + Math.floor(idx / 2);
         this.enemies.push({
           id: this.nextEnemyId++,
           kind,
@@ -610,12 +614,12 @@ export class PyramidGameEngine {
           vx: 0,
           vy: 0,
           r: 22,
-          hp: 5,
-          maxHp: 5,
+          hp: obeliskHp,
+          maxHp: obeliskHp,
           speed: 0,
           hitFlash: 0,
           slowTimer: 0,
-          aiTimer: 1.6 + Math.random() * 0.9,
+          aiTimer: 1.1 + Math.random() * 0.7,
           telegraphTimer: 0,
           chargeDirX: 0,
           chargeDirY: 0,
@@ -631,12 +635,12 @@ export class PyramidGameEngine {
           vx: 0,
           vy: 0,
           r: 36,
-          hp: 26,
-          maxHp: 26,
-          speed: 82,
+          hp: 38,
+          maxHp: 38,
+          speed: 105,
           hitFlash: 0,
           slowTimer: 0,
-          aiTimer: 1.8,
+          aiTimer: 1.4,
           telegraphTimer: 0,
           chargeDirX: 0,
           chargeDirY: 0,
@@ -647,19 +651,24 @@ export class PyramidGameEngine {
     };
 
     for (let i = 0; i < def.scarabCount; i++) {
-      const sx = 140 + ((i * 210) % (WORLD_W - 280));
-      const sy = 120 + ((i * 95) % 240);
+      const sx = 140 + ((i * 190) % (WORLD_W - 280));
+      const sy = 115 + ((i * 85) % 240);
       spawnEnemy('scarab', sx, sy);
     }
     for (let i = 0; i < def.mummyCount; i++) {
       const mx = i % 2 === 0 ? 210 : WORLD_W - 210;
-      const my = 180 + Math.floor(i / 2) * 180;
+      const my = 165 + Math.floor(i / 2) * 165;
       spawnEnemy('mummy', mx, my);
     }
+    const obeliskPositions: Vec2[] = [
+      { x: 155, y: 265 },
+      { x: WORLD_W - 155, y: 265 },
+      { x: WORLD_W / 2 - 215, y: 145 },
+      { x: WORLD_W / 2 + 215, y: 145 },
+    ];
     for (let i = 0; i < def.obeliskCount; i++) {
-      const ox = i === 0 ? 155 : i === 1 ? WORLD_W - 155 : WORLD_W / 2;
-      const oy = i === 2 ? 150 : 280;
-      spawnEnemy('obelisk', ox, oy);
+      const slot = obeliskPositions[i % obeliskPositions.length];
+      spawnEnemy('obelisk', slot.x, slot.y);
     }
     if (def.hasBoss) {
       spawnEnemy('boss', WORLD_W / 2, 220);
@@ -755,7 +764,7 @@ export class PyramidGameEngine {
     this.anubisRingTimer = Math.max(0, this.anubisRingTimer - dt);
 
     const powerGainMult = 1 + this.countRelic('power_gain') * 0.4;
-    this.divineEnergy = Math.min(100, this.divineEnergy + dt * 6.2 * powerGainMult);
+    this.divineEnergy = Math.min(100, this.divineEnergy + dt * 4.4 * powerGainMult);
 
     // Squash recovery
     this.squashX += (1 - this.squashX) * Math.min(1, dt * 14);
@@ -783,12 +792,12 @@ export class PyramidGameEngine {
     }
 
     // Buffered Dash
-    const dashCdMax = 0.85 * Math.pow(0.75, this.countRelic('dash_cd'));
+    const dashCdMax = 0.95 * Math.pow(0.75, this.countRelic('dash_cd'));
     if (this.bufferedDash > 0 && this.dashCooldown <= 0 && this.dashTimer <= 0) {
       this.bufferedDash = 0;
       this.dashCooldown = dashCdMax;
-      this.dashTimer = 0.17;
-      this.invulnTimer = Math.max(this.invulnTimer, 0.23);
+      this.dashTimer = 0.16;
+      this.invulnTimer = Math.max(this.invulnTimer, 0.21);
       if (mag > 0.05) {
         this.dashDirX = mx;
         this.dashDirY = my;
@@ -861,8 +870,8 @@ export class PyramidGameEngine {
     // Update Traps
     for (const trap of this.traps) {
       trap.cycleTimer = (trap.cycleTimer + dt) % trap.period;
-      if (trap.cycleTimer < 1.7) trap.state = 'idle';
-      else if (trap.cycleTimer < 2.5) trap.state = 'warning';
+      if (trap.cycleTimer < 1.15) trap.state = 'idle';
+      else if (trap.cycleTimer < 1.75) trap.state = 'warning';
       else trap.state = 'active';
 
       if (
@@ -888,9 +897,9 @@ export class PyramidGameEngine {
         this.score += points;
         if (isOrdered) {
           this.orderedCombos += 1;
-          this.divineEnergy = Math.min(100, this.divineEnergy + 25);
+          this.divineEnergy = Math.min(100, this.divineEnergy + 18);
         } else {
-          this.divineEnergy = Math.min(100, this.divineEnergy + 12);
+          this.divineEnergy = Math.min(100, this.divineEnergy + 8);
         }
         const collectedCount = this.glyphs.filter((item) => item.collected).length;
         soundEngine.playGlyphPickup(collectedCount - 1, isOrdered);
@@ -1047,9 +1056,9 @@ export class PyramidGameEngine {
   }
 
   private performSolarPulse() {
-    this.pulseCooldown = 0.34;
+    this.pulseCooldown = 0.38;
     const rangeMult = 1 + this.countRelic('pulse_range') * 0.25;
-    const radius = 112 * rangeMult;
+    const radius = 108 * rangeMult;
     const coneHalfAngle = 1.05; // wide sweeping solar arc
 
     this.squashX = 1.24;
@@ -1230,22 +1239,22 @@ export class PyramidGameEngine {
           e.vx *= 0.85;
           e.vy *= 0.85;
           if (e.telegraphTimer <= 0) {
-            e.chargingTimer = 0.28;
+            e.chargingTimer = 0.32;
             e.squash = 1.3;
           }
         } else if (e.chargingTimer > 0) {
           e.chargingTimer -= dt;
-          e.vx = e.chargeDirX * 330 * slowFactor;
-          e.vy = e.chargeDirY * 330 * slowFactor;
+          e.vx = e.chargeDirX * 390 * slowFactor;
+          e.vy = e.chargeDirY * 390 * slowFactor;
         } else {
           e.aiTimer -= dt;
           e.vx = (dx / dist) * e.speed * slowFactor;
           e.vy = (dy / dist) * e.speed * slowFactor;
-          if (e.aiTimer <= 0 && dist < 240) {
-            e.telegraphTimer = 0.45;
+          if (e.aiTimer <= 0 && dist < 290) {
+            e.telegraphTimer = 0.36;
             e.chargeDirX = dx / dist;
             e.chargeDirY = dy / dist;
-            e.aiTimer = 2.0 + Math.random() * 1.1;
+            e.aiTimer = 1.4 + Math.random() * 0.85;
           }
         }
       } else if (e.kind === 'mummy') {
@@ -1254,22 +1263,22 @@ export class PyramidGameEngine {
           e.vx = 0;
           e.vy = 0;
           if (e.telegraphTimer <= 0) {
-            e.chargingTimer = 0.46;
+            e.chargingTimer = 0.5;
             e.squash = 1.25;
           }
         } else if (e.chargingTimer > 0) {
           e.chargingTimer -= dt;
-          e.vx = e.chargeDirX * 380 * slowFactor;
-          e.vy = e.chargeDirY * 380 * slowFactor;
+          e.vx = e.chargeDirX * 435 * slowFactor;
+          e.vy = e.chargeDirY * 435 * slowFactor;
         } else {
           e.aiTimer -= dt;
           e.vx = (dx / dist) * e.speed * slowFactor;
           e.vy = (dy / dist) * e.speed * slowFactor;
-          if (e.aiTimer <= 0 && dist < 340) {
-            e.telegraphTimer = 0.68;
+          if (e.aiTimer <= 0 && dist < 390) {
+            e.telegraphTimer = 0.54;
             e.chargeDirX = dx / dist;
             e.chargeDirY = dy / dist;
-            e.aiTimer = 2.5 + Math.random();
+            e.aiTimer = 1.85 + Math.random() * 0.8;
           }
         }
       } else if (e.kind === 'obelisk') {
@@ -1279,56 +1288,87 @@ export class PyramidGameEngine {
           e.telegraphTimer -= dt * slowFactor;
           if (e.telegraphTimer <= 0) {
             const ang = Math.atan2(dy, dx);
-            this.projectiles.push({
-              x: e.x,
-              y: e.y,
-              vx: Math.cos(ang) * 230,
-              vy: Math.sin(ang) * 230,
-              r: 8,
-              fromPlayer: false,
-              color: '#F97316',
-              life: 3.8,
-            });
+            const spreadOffsets =
+              this.chamberIndex >= 3 ? [-0.22, 0, 0.22] : this.chamberIndex >= 2 ? [-0.14, 0.14] : [0];
+            const orbSpeed = 285 + this.chamberIndex * 12;
+            for (const offset of spreadOffsets) {
+              this.projectiles.push({
+                x: e.x,
+                y: e.y,
+                vx: Math.cos(ang + offset) * orbSpeed,
+                vy: Math.sin(ang + offset) * orbSpeed,
+                r: 8,
+                fromPlayer: false,
+                color: '#F97316',
+                life: 4.0,
+              });
+            }
             e.squash = 1.2;
-            e.aiTimer = 2.4;
+            e.aiTimer = 1.75;
           }
         } else {
           e.aiTimer -= dt * slowFactor;
           if (e.aiTimer <= 0) {
-            e.telegraphTimer = 1.0;
+            e.telegraphTimer = 0.78;
           }
         }
       } else if (e.kind === 'boss') {
-        // Apophis Shadow Guardian: hovers, telegraphs 3-orb volleys & occasional rush
+        // Apophis Shadow Guardian: hovers, telegraphs 3-orb or enraged 5-orb volleys & summons scarabs
+        const enraged = e.hp <= e.maxHp * 0.5;
         if (e.telegraphTimer > 0) {
           e.telegraphTimer -= dt;
           e.vx *= 0.88;
           e.vy *= 0.88;
           if (e.telegraphTimer <= 0) {
             const baseAng = Math.atan2(dy, dx);
-            for (const offset of [-0.32, 0, 0.32]) {
+            const volley = enraged ? [-0.52, -0.26, 0, 0.26, 0.52] : [-0.34, 0, 0.34];
+            const volleySpeed = enraged ? 295 : 270;
+            for (const offset of volley) {
               this.projectiles.push({
                 x: e.x,
                 y: e.y,
-                vx: Math.cos(baseAng + offset) * 245,
-                vy: Math.sin(baseAng + offset) * 245,
+                vx: Math.cos(baseAng + offset) * volleySpeed,
+                vy: Math.sin(baseAng + offset) * volleySpeed,
                 r: 9,
                 fromPlayer: false,
                 color: '#EC4899',
-                life: 4.0,
+                life: 4.2,
+              });
+            }
+            if (enraged && this.enemies.length < 7) {
+              this.enemies.push({
+                id: this.nextEnemyId++,
+                kind: 'scarab',
+                x: e.x + (Math.random() > 0.5 ? 54 : -54),
+                y: e.y + 32,
+                vx: 0,
+                vy: 0,
+                r: 14,
+                hp: 3,
+                maxHp: 3,
+                speed: 185,
+                hitFlash: 0,
+                slowTimer: 0,
+                aiTimer: 0.7,
+                telegraphTimer: 0,
+                chargeDirX: 0,
+                chargeDirY: 0,
+                chargingTimer: 0,
+                squash: 1,
               });
             }
             e.squash = 1.25;
-            e.aiTimer = 2.1;
+            e.aiTimer = enraged ? 1.3 : 1.6;
           }
         } else {
           e.aiTimer -= dt * slowFactor;
-          const targetX = WORLD_W / 2 + Math.cos(this.worldTime * 0.9) * 240;
-          const targetY = 210 + Math.sin(this.worldTime * 1.3) * 85;
-          e.vx = (targetX - e.x) * 1.4 * slowFactor;
-          e.vy = (targetY - e.y) * 1.4 * slowFactor;
+          const moveRate = enraged ? 1.3 : 0.95;
+          const targetX = WORLD_W / 2 + Math.cos(this.worldTime * moveRate) * 260;
+          const targetY = 205 + Math.sin(this.worldTime * (moveRate * 1.4)) * 95;
+          e.vx = (targetX - e.x) * (enraged ? 1.8 : 1.5) * slowFactor;
+          e.vy = (targetY - e.y) * (enraged ? 1.8 : 1.5) * slowFactor;
           if (e.aiTimer <= 0) {
-            e.telegraphTimer = 0.95;
+            e.telegraphTimer = enraged ? 0.65 : 0.78;
           }
         }
       }
@@ -1378,7 +1418,7 @@ export class PyramidGameEngine {
   private hurtPlayer(amount: number) {
     if (this.invulnTimer > 0 || this.mode !== 'PLAYING') return;
     this.hp = Math.max(0, this.hp - amount);
-    this.invulnTimer = 1.05;
+    this.invulnTimer = 0.8;
     this.hitFlashTimer = 0.22;
     this.hitstopTimer = 0.055;
     this.shakeTrauma = Math.min(1, this.shakeTrauma + 0.58);

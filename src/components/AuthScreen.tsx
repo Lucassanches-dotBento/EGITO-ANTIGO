@@ -1,23 +1,29 @@
 import {
   AuthProvider,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
-  updateProfile,
 } from 'firebase/auth';
-import { Eye, EyeOff, Lock, Mail, Sparkles, User } from 'lucide-react';
-import { FormEvent, useMemo, useState } from 'react';
+import { Eye, EyeOff, KeyRound, Lock, Mail, Sparkles, User } from 'lucide-react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   auth,
   githubProvider,
   googleProvider,
+  isBootstrappedAdminEmail,
   microsoftProvider,
 } from '../firebase';
 import { Language, translateToHieroglyphs } from '../game/data';
+import {
+  getServerAuthConfig,
+  loginAnonymousWithServer,
+  loginWithServer,
+  registerWithServer,
+  ServerApiError,
+  ServerAuthSession,
+} from '../lib/serverAuth';
 
 export const EMAIL_LINK_STORAGE_KEY = 'egito_magic_link_email';
 
@@ -26,6 +32,7 @@ interface AuthScreenProps {
   onChangeLang: (lang: Language) => void;
   onContinueAsGuest: () => void;
   onAuthenticated: (preferredCartouche?: string) => void;
+  onServerAuthenticated: (session: ServerAuthSession) => void;
 }
 
 const AUTH_COPY: Record<
@@ -63,6 +70,9 @@ const AUTH_COPY: Record<
     errOperationNotAllowed: string;
     errPopupClosed: string;
     errGeneric: string;
+    adminPasscodeLabel: string;
+    adminPasscodePlaceholder: string;
+    resetUnavailableLocal: string;
   }
 > = {
   pt: {
@@ -97,9 +107,13 @@ const AUTH_COPY: Record<
     errAccountExistsDiffCred:
       'Já existe uma conta com este e-mail usando outro método (ex: Google). Entre com esse provedor.',
     errOperationNotAllowed:
-      'Este provedor ainda não está ativado no Console do Firebase (Authentication → Sign-in method). Ative-o no console ou use "Google".',
+      'Este provedor externo ainda não está ativado no Console do Firebase. Use E-mail e Senha ou Google.',
     errPopupClosed: 'A janela de autenticação foi fechada antes de concluir.',
     errGeneric: 'Não foi possível concluir a autenticação. Tente novamente.',
+    adminPasscodeLabel: 'Código Administrativo',
+    adminPasscodePlaceholder: 'Código de fundador',
+    resetUnavailableLocal:
+      'Para contas criadas por e-mail e senha no templo, altere sua senha após entrar no Perfil do Explorador.',
   },
   en: {
     subtitle: 'Temple Gateway',
@@ -133,9 +147,13 @@ const AUTH_COPY: Record<
     errAccountExistsDiffCred:
       'An account already exists with this email using another provider (e.g. Google).',
     errOperationNotAllowed:
-      'This provider is not enabled yet in Firebase Console (Authentication → Sign-in method). Enable it there or use Google.',
+      'This external provider is not enabled yet in Firebase Console. Use Email & Password or Google.',
     errPopupClosed: 'Sign-in popup was closed before completing.',
     errGeneric: 'Authentication failed. Please try again.',
+    adminPasscodeLabel: 'Admin Passcode',
+    adminPasscodePlaceholder: 'Founder passcode',
+    resetUnavailableLocal:
+      'For temple Email & Password accounts, you can update your password inside Explorer Profile after signing in.',
   },
   es: {
     subtitle: 'Portal del Templo',
@@ -169,9 +187,13 @@ const AUTH_COPY: Record<
     errAccountExistsDiffCred:
       'Ya existe una cuenta con este correo usando otro proveedor (ej. Google).',
     errOperationNotAllowed:
-      'Este proveedor aún no está habilitado en Firebase Console (Authentication → Sign-in method). Actívalo allí o usa Google.',
+      'Este proveedor externo aún no está habilitado en Firebase Console. Usa Correo y Contraseña o Google.',
     errPopupClosed: 'Se cerró la ventana de autenticación antes de completar.',
     errGeneric: 'No se pudo completar la autenticación. Inténtalo de nuevo.',
+    adminPasscodeLabel: 'Código Administrativo',
+    adminPasscodePlaceholder: 'Código de fundador',
+    resetUnavailableLocal:
+      'Para cuentas de correo y contraseña del templo, cambia tu contraseña en el Perfil del Explorador al iniciar sesión.',
   },
 };
 
@@ -180,6 +202,7 @@ export function AuthScreen({
   onChangeLang,
   onContinueAsGuest,
   onAuthenticated,
+  onServerAuthenticated,
 }: AuthScreenProps) {
   const c = AUTH_COPY[lang];
   const [tab, setTab] = useState<'login' | 'signup' | 'magic'>('login');
@@ -187,10 +210,25 @@ export function AuthScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [adminPasscode, setAdminPasscode] = useState('');
+  const [adminPasscodeRequired, setAdminPasscodeRequired] = useState(false);
+  const [forceShowPasscode, setForceShowPasscode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
+
+  useEffect(() => {
+    getServerAuthConfig()
+      .then((cfg) => setAdminPasscodeRequired(cfg.adminPasscodeRequired))
+      .catch(() => {
+        // Ignore if config check fails silently
+      });
+  }, []);
+
+  const showAdminPasscodeInput =
+    tab === 'signup' &&
+    (forceShowPasscode || (adminPasscodeRequired && isBootstrappedAdminEmail(email)));
 
   const cartouchePreview = useMemo(
     () => translateToHieroglyphs((name || 'FARAÓ').slice(0, 18)),
@@ -198,6 +236,12 @@ export function AuthScreen({
   );
 
   function mapAuthError(err: unknown): string {
+    if (err instanceof ServerApiError) {
+      if (err.code === 'EMAIL_IN_USE') return c.errEmailInUse;
+      if (err.code === 'INVALID_CREDENTIALS') return c.errInvalidCreds;
+      if (err.code === 'INVALID_PASSWORD') return c.errPasswordLength;
+      return err.message;
+    }
     const code = (err as { code?: string })?.code || '';
     if (code === 'auth/email-already-in-use') return c.errEmailInUse;
     if (
@@ -256,22 +300,43 @@ export function AuthScreen({
 
     setLoading(true);
     try {
+      const cleanEmail = email.trim();
       if (tab === 'login') {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
-        onAuthenticated();
+        try {
+          const session = await loginWithServer({
+            email: cleanEmail,
+            password,
+          });
+          onServerAuthenticated(session);
+          return;
+        } catch (srvErr) {
+          if (srvErr instanceof ServerApiError && srvErr.code === 'INVALID_CREDENTIALS') {
+            try {
+              await signInWithEmailAndPassword(auth, cleanEmail, password);
+              onAuthenticated();
+              return;
+            } catch {
+              throw srvErr;
+            }
+          }
+          throw srvErr;
+        }
       } else {
         const cleanName = name.trim().slice(0, 60) || 'Explorador';
         const cleanCartouche = cleanName.slice(0, 18).toUpperCase();
-        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
-        await updateProfile(cred.user, { displayName: cleanName });
-        try {
-          await sendEmailVerification(cred.user);
-        } catch {
-          // Non-fatal if verification email rate-limited
-        }
-        onAuthenticated(cleanCartouche);
+        const session = await registerWithServer({
+          email: cleanEmail,
+          password,
+          displayName: cleanName,
+          cartoucheName: cleanCartouche,
+          adminPasscode: adminPasscode.trim() || undefined,
+        });
+        onServerAuthenticated(session);
       }
     } catch (err) {
+      if (err instanceof ServerApiError && err.code === 'ADMIN_PASSCODE_REQUIRED') {
+        setForceShowPasscode(true);
+      }
       setErrorMsg(mapAuthError(err));
     } finally {
       setLoading(false);
@@ -300,6 +365,17 @@ export function AuthScreen({
       await signInAnonymously(auth);
       onAuthenticated('VIAJANTE');
     } catch (err) {
+      const code = (err as { code?: string })?.code || '';
+      if (code === 'auth/operation-not-allowed' || code === 'auth/admin-restricted-operation') {
+        try {
+          const session = await loginAnonymousWithServer();
+          onServerAuthenticated(session);
+          return;
+        } catch (srvErr) {
+          setErrorMsg(mapAuthError(srvErr));
+          return;
+        }
+      }
       setErrorMsg(mapAuthError(err));
     } finally {
       setLoading(false);
@@ -318,7 +394,12 @@ export function AuthScreen({
       await sendPasswordResetEmail(auth, email.trim());
       setInfoMsg(c.resetSent);
     } catch (err) {
-      setErrorMsg(mapAuthError(err));
+      const code = (err as { code?: string })?.code || '';
+      if (code === 'auth/operation-not-allowed' || code === 'auth/admin-restricted-operation') {
+        setInfoMsg(c.resetUnavailableLocal);
+      } else {
+        setErrorMsg(mapAuthError(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -579,6 +660,29 @@ export function AuthScreen({
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder={c.passwordPlaceholder}
                   className="w-full rounded-xl border border-amber-500/30 bg-[#1B1208] pl-9 pr-3.5 py-2.5 text-sm text-amber-50 placeholder:text-amber-200/35 focus:border-amber-400 focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {showAdminPasscodeInput && (
+            <div>
+              <label
+                htmlFor="auth-admin-passcode"
+                className="block text-xs font-medium text-amber-300 mb-1"
+              >
+                {c.adminPasscodeLabel}
+              </label>
+              <div className="relative">
+                <KeyRound className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400/70" />
+                <input
+                  id="auth-admin-passcode"
+                  type="password"
+                  required
+                  value={adminPasscode}
+                  onChange={(e) => setAdminPasscode(e.target.value)}
+                  placeholder={c.adminPasscodePlaceholder}
+                  className="w-full rounded-xl border border-amber-500/40 bg-[#1B1208] pl-9 pr-3.5 py-2.5 text-sm text-amber-50 placeholder:text-amber-200/35 focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>

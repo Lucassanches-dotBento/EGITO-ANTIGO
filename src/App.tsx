@@ -35,10 +35,17 @@ import {
   UI_TEXT,
 } from './game/data';
 import { GameMode, HudSnapshot, PyramidGameEngine } from './game/engine';
+import {
+  recordServerRun,
+  serverAccountToProfile,
+  ServerAuthSession,
+  serverRunsToExpeditionRuns,
+  updateServerCartouche,
+} from './lib/serverAuth';
 
 const INITIAL_HUD: HudSnapshot = {
-  hp: 5,
-  maxHp: 5,
+  hp: 4,
+  maxHp: 4,
   score: 0,
   chamberIndex: 0,
   godId: 'bastet',
@@ -46,7 +53,7 @@ const INITIAL_HUD: HudSnapshot = {
   collectedMask: [false, false, false],
   nextGlyphIndex: 0,
   portalOpen: false,
-  divineEnergy: 100,
+  divineEnergy: 65,
   dashReadyRatio: 1,
   bossHp: 0,
   bossMaxHp: 0,
@@ -126,6 +133,7 @@ export default function App() {
 
   const [authReady, setAuthReady] = useState(false);
   const [authUser, setAuthUser] = useState<User | null>(null);
+  const [serverToken, setServerToken] = useState<string | null>(null);
   const [guestMode, setGuestMode] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [recentRuns, setRecentRuns] = useState<ExpeditionRunData[]>([]);
@@ -152,6 +160,8 @@ export default function App() {
 
   const authUserRef = useRef<User | null>(null);
   authUserRef.current = authUser;
+  const serverTokenRef = useRef<string | null>(null);
+  serverTokenRef.current = serverToken;
   const userProfileRef = useRef<UserProfileData | null>(null);
   userProfileRef.current = userProfile;
   const playerNameRef = useRef(playerName);
@@ -186,10 +196,11 @@ export default function App() {
       setAuthUser(user);
       setAuthReady(true);
       if (user) {
+        setServerToken(null);
         setGuestMode(false);
         const fallbackCartouche = (user.displayName || 'FARAÓ').slice(0, 18).toUpperCase();
         setPlayerName((prev) => (prev === 'FARAÓ' && user.displayName ? fallbackCartouche : prev));
-      } else {
+      } else if (!serverTokenRef.current) {
         setUserProfile(null);
         setRecentRuns([]);
       }
@@ -247,6 +258,16 @@ export default function App() {
     });
   }, []);
 
+  const handleServerAuthenticated = useCallback((session: ServerAuthSession) => {
+    setServerToken(session.token);
+    setGuestMode(false);
+    setUserProfile(serverAccountToProfile(session.user));
+    setRecentRuns(serverRunsToExpeditionRuns(session.runs));
+    if (session.user.cartoucheName) {
+      setPlayerName(session.user.cartoucheName);
+    }
+  }, []);
+
   const handleStartExpeditionAt = useCallback(
     (chamberIdx = 0) => {
       const engine = engineRef.current;
@@ -256,7 +277,14 @@ export default function App() {
       setShowProfile(false);
       setShowAdmin(false);
 
-      if (authUser && authUser.emailVerified) {
+      if (serverToken) {
+        updateServerCartouche(serverToken, {
+          displayName: userProfile?.displayName || playerName || 'Explorador',
+          cartoucheName: playerName || 'FARAÓ',
+        })
+          .then((res) => setUserProfile(serverAccountToProfile(res.user)))
+          .catch((err) => console.error(err));
+      } else if (authUser && authUser.emailVerified) {
         updateProfileCartouche(
           authUser.uid,
           authUser.displayName || playerName || 'Explorador',
@@ -267,7 +295,7 @@ export default function App() {
       engine.startNewExpedition(chamberIdx);
       setMode('PLAYING');
     },
-    [authUser, playerName]
+    [authUser, serverToken, userProfile, playerName]
   );
 
   const handleStartGame = useCallback(() => {
@@ -312,8 +340,14 @@ export default function App() {
 
   const handleSignOut = useCallback(async () => {
     setShowProfile(false);
+    setShowAdmin(false);
     setGuestMode(false);
-    await signOut(auth);
+    setServerToken(null);
+    setUserProfile(null);
+    setRecentRuns([]);
+    if (auth.currentUser) {
+      await signOut(auth);
+    }
   }, []);
 
   const handleRefreshVerification = useCallback(async () => {
@@ -337,6 +371,24 @@ export default function App() {
     if (!canvas) return;
 
     const persistRun = (score: number, chambersCleared: number, combos: number, victory: boolean) => {
+      const activeServerToken = serverTokenRef.current;
+      if (activeServerToken) {
+        recordServerRun(activeServerToken, {
+          cartoucheName: playerNameRef.current || 'FARAÓ',
+          score,
+          chambersCleared,
+          combos,
+          relicCount: relicCountRef.current,
+          victory,
+        })
+          .then((res) => {
+            setUserProfile(serverAccountToProfile(res.user));
+            setRecentRuns(serverRunsToExpeditionRuns(res.runs));
+          })
+          .catch((err) => console.error('Failed to record server run:', err));
+        return;
+      }
+
       const user = authUserRef.current;
       if (user && user.emailVerified) {
         recordExpeditionRun({
@@ -402,9 +454,13 @@ export default function App() {
     };
   }, []);
 
-  const showAuthScreen = authReady && !authUser && !guestMode && mode === 'TITLE_MENU';
+  const isSignedIn = Boolean(authUser || serverToken);
+  const authMode: 'firebase' | 'server' = serverToken ? 'server' : 'firebase';
+  const activeEmail = userProfile?.email || authUser?.email || '';
+  const activeUid = userProfile?.uid || authUser?.uid || '';
+  const showAuthScreen = authReady && !isSignedIn && !guestMode && mode === 'TITLE_MENU';
   const isAdmin = Boolean(
-    authUser && (userProfile?.role === 'admin' || isBootstrappedAdminEmail(authUser.email))
+    isSignedIn && (userProfile?.role === 'admin' || isBootstrappedAdminEmail(activeEmail))
   );
 
   // Enter / Space shortcut on Title Screen (only when Auth/Modals are closed)
@@ -455,6 +511,7 @@ export default function App() {
             if (preferredCartouche) setPlayerName(preferredCartouche);
             setGuestMode(false);
           }}
+          onServerAuthenticated={handleServerAuthenticated}
         />
       )}
 
@@ -474,7 +531,7 @@ export default function App() {
               </button>
             )}
 
-            {authUser ? (
+            {isSignedIn ? (
               <button
                 type="button"
                 onClick={() => setShowProfile(true)}
@@ -483,8 +540,8 @@ export default function App() {
                 <UserCircle2 className="h-4 w-4 text-amber-400" />
                 <span className="truncate max-w-[140px]">
                   {userProfile?.displayName ||
-                    authUser.displayName ||
-                    authUser.email ||
+                    authUser?.displayName ||
+                    authUser?.email ||
                     (lang === 'pt' ? 'Anônimo' : lang === 'es' ? 'Anónimo' : 'Anonymous')}
                 </span>
                 {userProfile && (
@@ -813,10 +870,12 @@ export default function App() {
       )}
 
       {/* PROFILE MODAL */}
-      {showProfile && authUser && (
+      {showProfile && isSignedIn && (
         <ProfileModal
           lang={lang}
-          user={authUser}
+          authMode={authMode}
+          firebaseUser={authUser}
+          serverToken={serverToken}
           profile={userProfile}
           runs={recentRuns}
           onRefreshVerification={handleRefreshVerification}
@@ -827,10 +886,14 @@ export default function App() {
       )}
 
       {/* ADMIN PANEL MODAL */}
-      {showAdmin && authUser && isAdmin && (
+      {showAdmin && isSignedIn && isAdmin && (
         <AdminPanelModal
           lang={lang}
-          currentUser={authUser}
+          authMode={authMode}
+          currentUid={activeUid}
+          currentEmail={activeEmail}
+          currentEmailVerified={authMode === 'server' ? true : Boolean(authUser?.emailVerified)}
+          serverToken={serverToken}
           onStartFromChamber={(chamberIdx) => handleStartExpeditionAt(chamberIdx)}
           onClose={() => setShowAdmin(false)}
         />

@@ -1,6 +1,6 @@
 import { linkWithPopup, User } from 'firebase/auth';
-import { LogOut, RefreshCw, X } from 'lucide-react';
-import { useState } from 'react';
+import { Eye, EyeOff, KeyRound, LogOut, RefreshCw, X } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 import {
   ExpeditionRunData,
   googleProvider,
@@ -8,10 +8,13 @@ import {
   UserProfileData,
 } from '../firebase';
 import { Language, translateToHieroglyphs } from '../game/data';
+import { setPasswordWithFirebaseToken, updateServerPassword } from '../lib/serverAuth';
 
 interface ProfileModalProps {
   lang: Language;
-  user: User;
+  authMode: 'firebase' | 'server';
+  firebaseUser?: User | null;
+  serverToken?: string | null;
   profile: UserProfileData | null;
   runs: ExpeditionRunData[];
   onRefreshVerification: () => Promise<void>;
@@ -40,6 +43,14 @@ const PROFILE_COPY: Record<
     roleAdmin: string;
     rolePlayer: string;
     anonName: string;
+    changePasswordBtn: string;
+    setPasswordBtn: string;
+    currentPasswordLabel: string;
+    newPasswordLabel: string;
+    confirmNewPasswordLabel: string;
+    passwordMismatch: string;
+    savePasswordBtn: string;
+    passwordUpdated: string;
   }
 > = {
   pt: {
@@ -62,6 +73,14 @@ const PROFILE_COPY: Record<
     roleAdmin: 'Administrador',
     rolePlayer: 'Explorador',
     anonName: 'Viajante Anônimo',
+    changePasswordBtn: 'Alterar Senha',
+    setPasswordBtn: 'Definir / Alterar Senha',
+    currentPasswordLabel: 'Senha Atual',
+    newPasswordLabel: 'Nova Senha (mín. 6 caracteres)',
+    confirmNewPasswordLabel: 'Confirmar Nova Senha',
+    passwordMismatch: 'As senhas não conferem.',
+    savePasswordBtn: 'Salvar Senha',
+    passwordUpdated: 'Senha salva com sucesso! Agora você também pode entrar usando seu e-mail e essa senha.',
   },
   en: {
     title: 'Explorer Profile',
@@ -83,6 +102,14 @@ const PROFILE_COPY: Record<
     roleAdmin: 'Administrator',
     rolePlayer: 'Explorer',
     anonName: 'Anonymous Traveler',
+    changePasswordBtn: 'Change Password',
+    setPasswordBtn: 'Set / Change Password',
+    currentPasswordLabel: 'Current Password',
+    newPasswordLabel: 'New Password (min. 6 chars)',
+    confirmNewPasswordLabel: 'Confirm New Password',
+    passwordMismatch: 'Passwords do not match.',
+    savePasswordBtn: 'Save Password',
+    passwordUpdated: 'Password saved! You can now also sign in with your email and this password.',
   },
   es: {
     title: 'Perfil del Explorador',
@@ -104,12 +131,22 @@ const PROFILE_COPY: Record<
     roleAdmin: 'Administrador',
     rolePlayer: 'Explorador',
     anonName: 'Viajero Anónimo',
+    changePasswordBtn: 'Cambiar Contraseña',
+    setPasswordBtn: 'Definir / Cambiar Contraseña',
+    currentPasswordLabel: 'Contraseña Actual',
+    newPasswordLabel: 'Nueva Contraseña (mín. 6 caracteres)',
+    confirmNewPasswordLabel: 'Confirmar Nueva Contraseña',
+    passwordMismatch: 'Las contraseñas no coinciden.',
+    savePasswordBtn: 'Guardar Contraseña',
+    passwordUpdated: '¡Contraseña guardada! Ahora también puedes entrar con tu correo y esta contraseña.',
   },
 };
 
 export function ProfileModal({
   lang,
-  user,
+  authMode,
+  firebaseUser,
+  serverToken,
   profile,
   runs,
   onRefreshVerification,
@@ -119,18 +156,84 @@ export function ProfileModal({
 }: ProfileModalProps) {
   const c = PROFILE_COPY[lang];
   const [linkErr, setLinkErr] = useState('');
+  const [showPwdForm, setShowPwdForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showPwdChars, setShowPwdChars] = useState(false);
+  const [pwdBusy, setPwdBusy] = useState(false);
+  const [pwdError, setPwdError] = useState('');
+  const [pwdSuccess, setPwdSuccess] = useState('');
+
+  const isAnonymous =
+    authMode === 'firebase' ? Boolean(firebaseUser?.isAnonymous) : !profile?.email;
+  const email = profile?.email || firebaseUser?.email || '';
+  const emailVerified =
+    authMode === 'server' ? true : Boolean(firebaseUser?.emailVerified);
   const displayName =
-    profile?.displayName || user.displayName || (user.isAnonymous ? c.anonName : 'Explorador');
-  const cartouche = profile?.cartoucheName || (user.isAnonymous ? 'VIAJANTE' : displayName.slice(0, 18));
-  const isAdmin = profile?.role === 'admin' || isBootstrappedAdminEmail(user.email);
+    profile?.displayName ||
+    firebaseUser?.displayName ||
+    (isAnonymous ? c.anonName : 'Explorador');
+  const cartouche =
+    profile?.cartoucheName || (isAnonymous ? 'VIAJANTE' : displayName.slice(0, 18));
+  const isAdmin = profile?.role === 'admin' || isBootstrappedAdminEmail(email);
+  const canManagePassword =
+    !isAnonymous &&
+    ((authMode === 'server' && Boolean(serverToken)) ||
+      (authMode === 'firebase' && Boolean(firebaseUser) && emailVerified));
 
   async function handleLinkGoogle() {
+    if (!firebaseUser) return;
     setLinkErr('');
     try {
-      await linkWithPopup(user, googleProvider);
+      await linkWithPopup(firebaseUser, googleProvider);
       await onRefreshVerification();
     } catch (err) {
       setLinkErr(err instanceof Error ? err.message : 'Erro ao vincular conta.');
+    }
+  }
+
+  async function handlePasswordUpdate(e: FormEvent) {
+    e.preventDefault();
+    setPwdError('');
+    setPwdSuccess('');
+
+    if (authMode === 'firebase') {
+      if (!firebaseUser) return;
+      if (newPassword !== confirmNewPassword) {
+        setPwdError(c.passwordMismatch);
+        return;
+      }
+      setPwdBusy(true);
+      try {
+        const idToken = await firebaseUser.getIdToken();
+        await setPasswordWithFirebaseToken(idToken, {
+          newPassword,
+          displayName,
+          cartoucheName: cartouche,
+        });
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setPwdSuccess(c.passwordUpdated);
+      } catch (err) {
+        setPwdError(err instanceof Error ? err.message : 'Erro ao salvar senha.');
+      } finally {
+        setPwdBusy(false);
+      }
+      return;
+    }
+
+    if (!serverToken) return;
+    setPwdBusy(true);
+    try {
+      await updateServerPassword(serverToken, { currentPassword, newPassword });
+      setCurrentPassword('');
+      setNewPassword('');
+      setPwdSuccess(c.passwordUpdated);
+    } catch (err) {
+      setPwdError(err instanceof Error ? err.message : 'Erro ao atualizar senha.');
+    } finally {
+      setPwdBusy(false);
     }
   }
 
@@ -159,7 +262,7 @@ export function ProfileModal({
             <div>
               <h3 className="text-lg font-bold text-amber-100">{displayName}</h3>
               <p className="text-xs text-amber-300/75">
-                {user.email || c.anonName} ·{' '}
+                {email || c.anonName} ·{' '}
                 <span className={isAdmin ? 'text-amber-400 font-semibold' : ''}>
                   {isAdmin ? c.roleAdmin : c.rolePlayer}
                 </span>
@@ -173,7 +276,7 @@ export function ProfileModal({
             </div>
           </div>
 
-          {user.isAnonymous && (
+          {authMode === 'firebase' && isAnonymous && firebaseUser && (
             <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-xs text-amber-100 space-y-3">
               <p>{c.anonNotice}</p>
               {linkErr && <p className="text-red-300">{linkErr}</p>}
@@ -187,7 +290,7 @@ export function ProfileModal({
             </div>
           )}
 
-          {!user.isAnonymous && !user.emailVerified && (
+          {authMode === 'firebase' && !isAnonymous && !emailVerified && (
             <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-xs text-amber-100 space-y-3">
               <p>{c.verifyNotice}</p>
               <div className="flex flex-wrap gap-2">
@@ -259,7 +362,97 @@ export function ProfileModal({
             )}
           </div>
 
-          <div className="flex justify-end pt-2">
+          {canManagePassword && showPwdForm && (
+            <form
+              onSubmit={handlePasswordUpdate}
+              className="rounded-xl border border-amber-500/25 bg-[#191108] p-4 space-y-3"
+            >
+              <div className="grid sm:grid-cols-2 gap-3">
+                {authMode === 'server' && (
+                  <div>
+                    <label className="block text-[11px] font-medium text-amber-200/80 mb-1">
+                      {c.currentPasswordLabel}
+                    </label>
+                    <input
+                      type={showPwdChars ? 'text' : 'password'}
+                      required
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full rounded-lg border border-amber-500/30 bg-[#120C06] px-3 py-2 text-xs text-amber-50 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                )}
+                <div>
+                  <label className="block text-[11px] font-medium text-amber-200/80 mb-1">
+                    {c.newPasswordLabel}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPwdChars ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full rounded-lg border border-amber-500/30 bg-[#120C06] pl-3 pr-8 py-2 text-xs text-amber-50 focus:border-amber-400 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPwdChars((prev) => !prev)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-amber-300/60 hover:text-amber-200 cursor-pointer"
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPwdChars ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
+                </div>
+                {authMode === 'firebase' && (
+                  <div>
+                    <label className="block text-[11px] font-medium text-amber-200/80 mb-1">
+                      {c.confirmNewPasswordLabel}
+                    </label>
+                    <input
+                      type={showPwdChars ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      className="w-full rounded-lg border border-amber-500/30 bg-[#120C06] px-3 py-2 text-xs text-amber-50 focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+              {pwdError && <p className="text-xs text-red-300">{pwdError}</p>}
+              {pwdSuccess && <p className="text-xs text-emerald-300">{pwdSuccess}</p>}
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={pwdBusy}
+                  className="rounded-lg bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-stone-950 hover:bg-amber-400 cursor-pointer disabled:opacity-50"
+                >
+                  {c.savePasswordBtn}
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="flex items-center justify-between pt-2 gap-3">
+            {canManagePassword ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPwdForm((prev) => !prev);
+                  setPwdError('');
+                  setPwdSuccess('');
+                }}
+                className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-[#1B1208] px-4 py-2 text-xs font-semibold text-amber-200 hover:bg-amber-500/15 cursor-pointer"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                <span>{authMode === 'firebase' ? c.setPasswordBtn : c.changePasswordBtn}</span>
+              </button>
+            ) : (
+              <div />
+            )}
+
             <button
               type="button"
               onClick={onSignOut}
