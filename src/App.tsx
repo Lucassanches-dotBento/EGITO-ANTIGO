@@ -1,8 +1,15 @@
-import { onAuthStateChanged, sendEmailVerification, signOut, User } from 'firebase/auth';
+import {
+  isSignInWithEmailLink,
+  onAuthStateChanged,
+  sendEmailVerification,
+  signInWithEmailLink,
+  signOut,
+  User,
+} from 'firebase/auth';
 import { BookOpen, LogIn, Pause, ShieldCheck, UserCircle2, Volume2, VolumeX } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AdminPanelModal } from './components/AdminPanelModal';
-import { AuthScreen } from './components/AuthScreen';
+import { AuthScreen, EMAIL_LINK_STORAGE_KEY } from './components/AuthScreen';
 import { CodexModal } from './components/CodexModal';
 import { ChamberClearModal, EndGameModal, PauseModal } from './components/GameModals';
 import { ProfileModal } from './components/ProfileModal';
@@ -155,6 +162,23 @@ export default function App() {
     () => translateToHieroglyphs(playerName || 'FARAÓ'),
     [playerName]
   );
+
+  // Complete Passwordless Magic Link sign-in if returning from email link
+  useEffect(() => {
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      const savedEmail = window.localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
+      if (savedEmail) {
+        signInWithEmailLink(auth, savedEmail, window.location.href)
+          .then(() => {
+            window.localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          })
+          .catch((err) => {
+            console.error('Magic link sign-in failed:', err);
+          });
+      }
+    }
+  }, []);
 
   // Firebase Auth listener
   useEffect(() => {
@@ -458,7 +482,10 @@ export default function App() {
               >
                 <UserCircle2 className="h-4 w-4 text-amber-400" />
                 <span className="truncate max-w-[140px]">
-                  {userProfile?.displayName || authUser.displayName || authUser.email}
+                  {userProfile?.displayName ||
+                    authUser.displayName ||
+                    authUser.email ||
+                    (lang === 'pt' ? 'Anônimo' : lang === 'es' ? 'Anónimo' : 'Anonymous')}
                 </span>
                 {userProfile && (
                   <span className="font-mono-tabular text-amber-300">

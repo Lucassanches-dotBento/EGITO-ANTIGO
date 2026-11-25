@@ -1,15 +1,25 @@
 import {
+  AuthProvider,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
+  sendSignInLinkToEmail,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
   updateProfile,
 } from 'firebase/auth';
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, Sparkles, User } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
+import {
+  auth,
+  githubProvider,
+  googleProvider,
+  microsoftProvider,
+} from '../firebase';
 import { Language, translateToHieroglyphs } from '../game/data';
-import { auth, googleProvider } from '../firebase';
+
+export const EMAIL_LINK_STORAGE_KEY = 'egito_magic_link_email';
 
 interface AuthScreenProps {
   lang: Language;
@@ -25,6 +35,7 @@ const AUTH_COPY: Record<
     title: string;
     tabLogin: string;
     tabSignup: string;
+    tabMagic: string;
     nameLabel: string;
     namePlaceholder: string;
     cartoucheLabel: string;
@@ -35,8 +46,11 @@ const AUTH_COPY: Record<
     confirmPasswordLabel: string;
     loginButton: string;
     signupButton: string;
-    googleButton: string;
+    magicButton: string;
+    magicHint: string;
+    magicSent: string;
     forgotPassword: string;
+    anonButton: string;
     guestButton: string;
     orDivider: string;
     resetSent: string;
@@ -45,6 +59,7 @@ const AUTH_COPY: Record<
     errPasswordLength: string;
     errEmailInUse: string;
     errInvalidCreds: string;
+    errAccountExistsDiffCred: string;
     errOperationNotAllowed: string;
     errPopupClosed: string;
     errGeneric: string;
@@ -55,6 +70,7 @@ const AUTH_COPY: Record<
     title: 'O Império do Egito',
     tabLogin: 'Entrar',
     tabSignup: 'Criar Conta',
+    tabMagic: 'Link Mágico',
     nameLabel: 'Nome do Explorador',
     namePlaceholder: 'Ex: Cleópatra',
     cartoucheLabel: 'Cartucho Real',
@@ -65,19 +81,24 @@ const AUTH_COPY: Record<
     confirmPasswordLabel: 'Confirmar Senha',
     loginButton: 'Entrar no Templo',
     signupButton: 'Criar Conta e Entrar',
-    googleButton: 'Continuar com Google',
+    magicButton: 'Enviar Link de Acesso',
+    magicHint: 'Receba um link único no seu e-mail para entrar ou criar conta sem senha.',
+    magicSent: 'Link de acesso enviado! Abra o link no seu e-mail para entrar automaticamente.',
     forgotPassword: 'Esqueci a senha',
+    anonButton: 'Entrar como Anônimo',
     guestButton: 'Continuar sem conta',
-    orDivider: 'ou',
+    orDivider: 'ou use seu e-mail',
     resetSent: 'Enviamos um link de redefinição de senha para o seu e-mail.',
     errEmailRequiredForReset: 'Informe seu e-mail acima para redefinir a senha.',
     errPasswordMismatch: 'As senhas informadas não conferem.',
     errPasswordLength: 'A senha deve ter pelo menos 6 caracteres.',
     errEmailInUse: 'Este e-mail já está cadastrado. Tente entrar na aba Entrar.',
     errInvalidCreds: 'E-mail ou senha inválidos.',
+    errAccountExistsDiffCred:
+      'Já existe uma conta com este e-mail usando outro método (ex: Google). Entre com esse provedor.',
     errOperationNotAllowed:
-      'Login por e-mail/senha ainda não ativado no Console do Firebase (Authentication > Sign-in method). Use "Continuar com Google" ou ative o provedor no console.',
-    errPopupClosed: 'A janela de login com Google foi fechada antes de concluir.',
+      'Este provedor ainda não está ativado no Console do Firebase (Authentication → Sign-in method). Ative-o no console ou use "Google".',
+    errPopupClosed: 'A janela de autenticação foi fechada antes de concluir.',
     errGeneric: 'Não foi possível concluir a autenticação. Tente novamente.',
   },
   en: {
@@ -85,6 +106,7 @@ const AUTH_COPY: Record<
     title: 'Empire of Egypt',
     tabLogin: 'Sign In',
     tabSignup: 'Create Account',
+    tabMagic: 'Magic Link',
     nameLabel: 'Explorer Name',
     namePlaceholder: 'e.g. Cleopatra',
     cartoucheLabel: 'Royal Cartouche',
@@ -95,19 +117,24 @@ const AUTH_COPY: Record<
     confirmPasswordLabel: 'Confirm Password',
     loginButton: 'Enter the Temple',
     signupButton: 'Create Account',
-    googleButton: 'Continue with Google',
+    magicButton: 'Send Sign-In Link',
+    magicHint: 'Receive a one-time email link to sign in or register without a password.',
+    magicSent: 'Sign-in link sent! Open the link in your email to enter automatically.',
     forgotPassword: 'Forgot password',
+    anonButton: 'Anonymous Sign-In',
     guestButton: 'Continue as guest',
-    orDivider: 'or',
+    orDivider: 'or use email',
     resetSent: 'Password reset link sent to your email.',
     errEmailRequiredForReset: 'Enter your email above to reset your password.',
     errPasswordMismatch: 'Passwords do not match.',
     errPasswordLength: 'Password must be at least 6 characters.',
     errEmailInUse: 'This email is already registered. Try signing in.',
     errInvalidCreds: 'Invalid email or password.',
+    errAccountExistsDiffCred:
+      'An account already exists with this email using another provider (e.g. Google).',
     errOperationNotAllowed:
-      'Email/Password sign-in is not yet enabled in Firebase Console (Authentication > Sign-in method). Use "Continue with Google" or enable it in the console.',
-    errPopupClosed: 'Google sign-in popup was closed before completing.',
+      'This provider is not enabled yet in Firebase Console (Authentication → Sign-in method). Enable it there or use Google.',
+    errPopupClosed: 'Sign-in popup was closed before completing.',
     errGeneric: 'Authentication failed. Please try again.',
   },
   es: {
@@ -115,6 +142,7 @@ const AUTH_COPY: Record<
     title: 'El Imperio de Egipto',
     tabLogin: 'Iniciar Sesión',
     tabSignup: 'Crear Cuenta',
+    tabMagic: 'Enlace Mágico',
     nameLabel: 'Nombre del Explorador',
     namePlaceholder: 'Ej: Cleopatra',
     cartoucheLabel: 'Cartucho Real',
@@ -125,19 +153,24 @@ const AUTH_COPY: Record<
     confirmPasswordLabel: 'Confirmar Contraseña',
     loginButton: 'Entrar al Templo',
     signupButton: 'Crear Cuenta',
-    googleButton: 'Continuar con Google',
+    magicButton: 'Enviar Enlace de Acceso',
+    magicHint: 'Recibe un enlace único en tu correo para entrar o registrarte sin contraseña.',
+    magicSent: '¡Enlace enviado! Abre el enlace en tu correo para entrar automáticamente.',
     forgotPassword: 'Olvidé mi contraseña',
+    anonButton: 'Acceso Anónimo',
     guestButton: 'Continuar sin cuenta',
-    orDivider: 'o',
+    orDivider: 'o usa tu correo',
     resetSent: 'Enviamos un enlace de recuperación a tu correo.',
     errEmailRequiredForReset: 'Ingresa tu correo arriba para restablecer la contraseña.',
     errPasswordMismatch: 'Las contraseñas no coinciden.',
     errPasswordLength: 'La contraseña debe tener al menos 6 caracteres.',
     errEmailInUse: 'Este correo ya está registrado. Intenta iniciar sesión.',
     errInvalidCreds: 'Correo o contraseña inválidos.',
+    errAccountExistsDiffCred:
+      'Ya existe una cuenta con este correo usando otro proveedor (ej. Google).',
     errOperationNotAllowed:
-      'El acceso por correo/contraseña aún no está habilitado en Firebase Console (Authentication > Sign-in method). Usa "Continuar con Google" o actívalo en la consola.',
-    errPopupClosed: 'Se cerró la ventana de Google antes de completar.',
+      'Este proveedor aún no está habilitado en Firebase Console (Authentication → Sign-in method). Actívalo allí o usa Google.',
+    errPopupClosed: 'Se cerró la ventana de autenticación antes de completar.',
     errGeneric: 'No se pudo completar la autenticación. Inténtalo de nuevo.',
   },
 };
@@ -149,7 +182,7 @@ export function AuthScreen({
   onAuthenticated,
 }: AuthScreenProps) {
   const c = AUTH_COPY[lang];
-  const [tab, setTab] = useState<'login' | 'signup'>('login');
+  const [tab, setTab] = useState<'login' | 'signup' | 'magic'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -175,8 +208,15 @@ export function AuthScreen({
     ) {
       return c.errInvalidCreds;
     }
-    if (code === 'auth/operation-not-allowed') return c.errOperationNotAllowed;
-    if (code === 'auth/popup-closed-by-user') return c.errPopupClosed;
+    if (code === 'auth/account-exists-with-different-credential') {
+      return c.errAccountExistsDiffCred;
+    }
+    if (code === 'auth/operation-not-allowed' || code === 'auth/admin-restricted-operation') {
+      return c.errOperationNotAllowed;
+    }
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+      return c.errPopupClosed;
+    }
     return c.errGeneric;
   }
 
@@ -184,6 +224,24 @@ export function AuthScreen({
     e.preventDefault();
     setErrorMsg('');
     setInfoMsg('');
+
+    if (tab === 'magic') {
+      setLoading(true);
+      try {
+        const cleanEmail = email.trim();
+        await sendSignInLinkToEmail(auth, cleanEmail, {
+          url: window.location.origin + window.location.pathname,
+          handleCodeInApp: true,
+        });
+        window.localStorage.setItem(EMAIL_LINK_STORAGE_KEY, cleanEmail);
+        setInfoMsg(c.magicSent);
+      } catch (err) {
+        setErrorMsg(mapAuthError(err));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (tab === 'signup') {
       if (password.length < 6) {
@@ -220,13 +278,27 @@ export function AuthScreen({
     }
   }
 
-  async function handleGoogleLogin() {
+  async function handleProviderPopup(provider: AuthProvider) {
     setErrorMsg('');
     setInfoMsg('');
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, provider);
       onAuthenticated();
+    } catch (err) {
+      setErrorMsg(mapAuthError(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAnonymousLogin() {
+    setErrorMsg('');
+    setInfoMsg('');
+    setLoading(true);
+    try {
+      await signInAnonymously(auth);
+      onAuthenticated('VIAJANTE');
     } catch (err) {
       setErrorMsg(mapAuthError(err));
     } finally {
@@ -274,7 +346,7 @@ export function AuthScreen({
         </div>
       </div>
 
-      {/* Auth Card centered-left to preserve pyramid horizon vista */}
+      {/* Auth Card */}
       <div className="my-auto w-full max-w-md mx-auto md:mx-0 md:ml-8 rounded-2xl border border-amber-500/35 bg-[#120C06]/95 p-6 sm:p-7 shadow-2xl">
         <p className="text-xs font-semibold tracking-[0.18em] text-amber-400 uppercase">
           {c.subtitle}
@@ -283,9 +355,64 @@ export function AuthScreen({
           {c.title}
         </h1>
 
-        {/* Segmented Tabs: Entrar | Criar Conta */}
+        {/* OAuth Providers Row: Google, GitHub, Microsoft */}
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => handleProviderPopup(googleProvider)}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-[#1D1409] hover:bg-amber-500/15 py-2.5 px-3 text-xs font-semibold text-amber-100 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+          >
+            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="#FBBF24"
+                d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81Z"
+              />
+            </svg>
+            <span>Google</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleProviderPopup(githubProvider)}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-[#1D1409] hover:bg-amber-500/15 py-2.5 px-3 text-xs font-semibold text-amber-100 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+          >
+            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
+              />
+            </svg>
+            <span>GitHub</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleProviderPopup(microsoftProvider)}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-[#1D1409] hover:bg-amber-500/15 py-2.5 px-3 text-xs font-semibold text-amber-100 transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+          >
+            <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 22 22" aria-hidden="true">
+              <rect x="1" y="1" width="9" height="9" fill="#F59E0B" />
+              <rect x="12" y="1" width="9" height="9" fill="#FCD34D" />
+              <rect x="1" y="12" width="9" height="9" fill="#D97706" />
+              <rect x="12" y="12" width="9" height="9" fill="#FBBF24" />
+            </svg>
+            <span>Microsoft</span>
+          </button>
+        </div>
+
+        <div className="my-4 flex items-center gap-3 text-xs text-amber-300/60">
+          <div className="h-px flex-1 bg-amber-500/20" />
+          <span>{c.orDivider}</span>
+          <div className="h-px flex-1 bg-amber-500/20" />
+        </div>
+
+        {/* Segmented Tabs: Entrar | Criar Conta | Link Mágico */}
         <div
-          className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-amber-500/25 bg-[#1A1107] p-1"
+          className="grid grid-cols-3 gap-1 rounded-xl border border-amber-500/25 bg-[#1A1107] p-1"
           role="tablist"
         >
           <button
@@ -297,7 +424,7 @@ export function AuthScreen({
               setErrorMsg('');
               setInfoMsg('');
             }}
-            className={`py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+            className={`py-2 px-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
               tab === 'login'
                 ? 'bg-amber-500 text-stone-950'
                 : 'text-amber-200/80 hover:text-amber-100'
@@ -314,7 +441,7 @@ export function AuthScreen({
               setErrorMsg('');
               setInfoMsg('');
             }}
-            className={`py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+            className={`py-2 px-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
               tab === 'signup'
                 ? 'bg-amber-500 text-stone-950'
                 : 'text-amber-200/80 hover:text-amber-100'
@@ -322,31 +449,26 @@ export function AuthScreen({
           >
             {c.tabSignup}
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'magic'}
+            onClick={() => {
+              setTab('magic');
+              setErrorMsg('');
+              setInfoMsg('');
+            }}
+            className={`py-2 px-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+              tab === 'magic'
+                ? 'bg-amber-500 text-stone-950'
+                : 'text-amber-200/80 hover:text-amber-100'
+            }`}
+          >
+            {c.tabMagic}
+          </button>
         </div>
 
-        {/* Google Auth Primary Button */}
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-xl border border-amber-400/40 bg-[#1D1409] hover:bg-amber-500/15 py-2.5 px-4 text-sm font-semibold text-amber-100 transition-colors cursor-pointer disabled:opacity-50"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              fill="#FBBF24"
-              d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81Z"
-            />
-          </svg>
-          <span>{c.googleButton}</span>
-        </button>
-
-        <div className="my-4 flex items-center gap-3 text-xs text-amber-300/60">
-          <div className="h-px flex-1 bg-amber-500/20" />
-          <span>{c.orDivider}</span>
-          <div className="h-px flex-1 bg-amber-500/20" />
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
           {tab === 'signup' && (
             <div>
               <label htmlFor="auth-name" className="block text-xs font-medium text-amber-200/90 mb-1">
@@ -393,42 +515,51 @@ export function AuthScreen({
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label htmlFor="auth-password" className="block text-xs font-medium text-amber-200/90">
-                {c.passwordLabel}
-              </label>
-              {tab === 'login' && (
+          {tab === 'magic' && (
+            <p className="text-xs text-amber-200/75 leading-relaxed flex items-start gap-2">
+              <Sparkles className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+              <span>{c.magicHint}</span>
+            </p>
+          )}
+
+          {tab !== 'magic' && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="auth-password" className="block text-xs font-medium text-amber-200/90">
+                  {c.passwordLabel}
+                </label>
+                {tab === 'login' && (
+                  <button
+                    type="button"
+                    onClick={handleResetPassword}
+                    className="text-[11px] text-amber-400 hover:text-amber-300 cursor-pointer"
+                  >
+                    {c.forgotPassword}
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400/70" />
+                <input
+                  id="auth-password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={c.passwordPlaceholder}
+                  className="w-full rounded-xl border border-amber-500/30 bg-[#1B1208] pl-9 pr-10 py-2.5 text-sm text-amber-50 placeholder:text-amber-200/35 focus:border-amber-400 focus:outline-none"
+                />
                 <button
                   type="button"
-                  onClick={handleResetPassword}
-                  className="text-[11px] text-amber-400 hover:text-amber-300 cursor-pointer"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-300/60 hover:text-amber-200 cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
-                  {c.forgotPassword}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
-              )}
+              </div>
             </div>
-            <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400/70" />
-              <input
-                id="auth-password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={c.passwordPlaceholder}
-                className="w-full rounded-xl border border-amber-500/30 bg-[#1B1208] pl-9 pr-10 py-2.5 text-sm text-amber-50 placeholder:text-amber-200/35 focus:border-amber-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-300/60 hover:text-amber-200 cursor-pointer"
-                aria-label="Toggle password visibility"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
+          )}
 
           {tab === 'signup' && (
             <div>
@@ -473,15 +604,30 @@ export function AuthScreen({
             disabled={loading}
             className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 py-3 px-5 text-sm font-bold text-stone-950 transition-colors cursor-pointer disabled:opacity-50"
           >
-            {tab === 'login' ? c.loginButton : c.signupButton}
+            {tab === 'login'
+              ? c.loginButton
+              : tab === 'signup'
+                ? c.signupButton
+                : c.magicButton}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 flex items-center justify-center gap-3 text-xs">
+          <button
+            type="button"
+            onClick={handleAnonymousLogin}
+            disabled={loading}
+            className="font-medium text-amber-300/80 hover:text-amber-100 underline underline-offset-4 cursor-pointer disabled:opacity-50"
+          >
+            {c.anonButton}
+          </button>
+          <span className="text-amber-500/40" aria-hidden="true">
+            ·
+          </span>
           <button
             type="button"
             onClick={onContinueAsGuest}
-            className="text-xs font-medium text-amber-300/75 hover:text-amber-100 underline underline-offset-4 cursor-pointer"
+            className="font-medium text-amber-300/80 hover:text-amber-100 underline underline-offset-4 cursor-pointer"
           >
             {c.guestButton}
           </button>

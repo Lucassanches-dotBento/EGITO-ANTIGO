@@ -1,5 +1,10 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import {
+  getAuth,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  OAuthProvider,
+} from 'firebase/auth';
 import {
   collection,
   deleteDoc,
@@ -23,6 +28,8 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const githubProvider = new GithubAuthProvider();
+export const microsoftProvider = new OAuthProvider('microsoft.com');
 
 export const BOOTSTRAPPED_ADMINS: { name: string; email: string }[] = [
   { name: 'Lucas', email: '20261ac0080020@estudantes.ifpr.edu.br' },

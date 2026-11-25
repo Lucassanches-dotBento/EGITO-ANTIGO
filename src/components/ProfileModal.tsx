@@ -1,6 +1,12 @@
+import { linkWithPopup, User } from 'firebase/auth';
 import { LogOut, RefreshCw, X } from 'lucide-react';
-import { User } from 'firebase/auth';
-import { ExpeditionRunData, isBootstrappedAdminEmail, UserProfileData } from '../firebase';
+import { useState } from 'react';
+import {
+  ExpeditionRunData,
+  googleProvider,
+  isBootstrappedAdminEmail,
+  UserProfileData,
+} from '../firebase';
 import { Language, translateToHieroglyphs } from '../game/data';
 
 interface ProfileModalProps {
@@ -26,11 +32,14 @@ const PROFILE_COPY: Record<
     victoryLabel: string;
     defeatLabel: string;
     verifyNotice: string;
+    anonNotice: string;
+    linkGoogleBtn: string;
     resendBtn: string;
     refreshBtn: string;
     signOutBtn: string;
     roleAdmin: string;
     rolePlayer: string;
+    anonName: string;
   }
 > = {
   pt: {
@@ -44,11 +53,15 @@ const PROFILE_COPY: Record<
     defeatLabel: 'Tentativa',
     verifyNotice:
       'Confirme seu e-mail para habilitar o salvamento automático na nuvem (ou entre com o Google).',
+    anonNotice:
+      'Você entrou com uma conta anônima temporária. Vincule ao Google para salvar seu progresso permanentemente na nuvem.',
+    linkGoogleBtn: 'Vincular Conta Google',
     resendBtn: 'Reenviar confirmação',
     refreshBtn: 'Já confirmei',
     signOutBtn: 'Sair da Conta',
     roleAdmin: 'Administrador',
     rolePlayer: 'Explorador',
+    anonName: 'Viajante Anônimo',
   },
   en: {
     title: 'Explorer Profile',
@@ -61,11 +74,15 @@ const PROFILE_COPY: Record<
     defeatLabel: 'Attempt',
     verifyNotice:
       'Verify your email to enable cloud save sync (or sign in with Google).',
+    anonNotice:
+      'You are using a temporary anonymous account. Link a Google account to save progress permanently in the cloud.',
+    linkGoogleBtn: 'Link Google Account',
     resendBtn: 'Resend email',
     refreshBtn: 'I verified',
     signOutBtn: 'Sign Out',
     roleAdmin: 'Administrator',
     rolePlayer: 'Explorer',
+    anonName: 'Anonymous Traveler',
   },
   es: {
     title: 'Perfil del Explorador',
@@ -78,11 +95,15 @@ const PROFILE_COPY: Record<
     defeatLabel: 'Intento',
     verifyNotice:
       'Confirma tu correo para activar el guardado en la nube (o entra con Google).',
+    anonNotice:
+      'Usas una cuenta anónima temporal. Vincúlala con Google para guardar tu progreso en la nube.',
+    linkGoogleBtn: 'Vincular Cuenta Google',
     resendBtn: 'Reenviar correo',
     refreshBtn: 'Ya confirmé',
     signOutBtn: 'Cerrar Sesión',
     roleAdmin: 'Administrador',
     rolePlayer: 'Explorador',
+    anonName: 'Viajero Anónimo',
   },
 };
 
@@ -97,9 +118,21 @@ export function ProfileModal({
   onClose,
 }: ProfileModalProps) {
   const c = PROFILE_COPY[lang];
-  const displayName = profile?.displayName || user.displayName || 'Explorador';
-  const cartouche = profile?.cartoucheName || displayName.slice(0, 18);
+  const [linkErr, setLinkErr] = useState('');
+  const displayName =
+    profile?.displayName || user.displayName || (user.isAnonymous ? c.anonName : 'Explorador');
+  const cartouche = profile?.cartoucheName || (user.isAnonymous ? 'VIAJANTE' : displayName.slice(0, 18));
   const isAdmin = profile?.role === 'admin' || isBootstrappedAdminEmail(user.email);
+
+  async function handleLinkGoogle() {
+    setLinkErr('');
+    try {
+      await linkWithPopup(user, googleProvider);
+      await onRefreshVerification();
+    } catch (err) {
+      setLinkErr(err instanceof Error ? err.message : 'Erro ao vincular conta.');
+    }
+  }
 
   return (
     <div
@@ -126,7 +159,7 @@ export function ProfileModal({
             <div>
               <h3 className="text-lg font-bold text-amber-100">{displayName}</h3>
               <p className="text-xs text-amber-300/75">
-                {user.email} ·{' '}
+                {user.email || c.anonName} ·{' '}
                 <span className={isAdmin ? 'text-amber-400 font-semibold' : ''}>
                   {isAdmin ? c.roleAdmin : c.rolePlayer}
                 </span>
@@ -140,7 +173,21 @@ export function ProfileModal({
             </div>
           </div>
 
-          {!user.emailVerified && (
+          {user.isAnonymous && (
+            <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-xs text-amber-100 space-y-3">
+              <p>{c.anonNotice}</p>
+              {linkErr && <p className="text-red-300">{linkErr}</p>}
+              <button
+                type="button"
+                onClick={handleLinkGoogle}
+                className="rounded-lg bg-amber-500 px-3.5 py-2 font-bold text-stone-950 hover:bg-amber-400 cursor-pointer"
+              >
+                {c.linkGoogleBtn}
+              </button>
+            </div>
+          )}
+
+          {!user.isAnonymous && !user.emailVerified && (
             <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-xs text-amber-100 space-y-3">
               <p>{c.verifyNotice}</p>
               <div className="flex flex-wrap gap-2">
