@@ -1,0 +1,227 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser()
+        && request.auth.token.email is string
+        && request.auth.token.email in [
+          '20261ac0080020@estudantes.ifpr.edu.br',
+          '20261ac0080019@estudantes.ifpr.edu.br',
+          '20261ac0080070@estudantes.ifpr.edu.br'
+        ];
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        isBootstrappedAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll([
+        'uid',
+        'displayName',
+        'cartoucheName',
+        'email',
+        'role',
+        'bestScore',
+        'chambersClearedMax',
+        'gamesPlayed',
+        'createdAt',
+        'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'uid',
+        'displayName',
+        'cartoucheName',
+        'email',
+        'role',
+        'bestScore',
+        'chambersClearedMax',
+        'gamesPlayed',
+        'createdAt',
+        'updatedAt'
+      ])
+      && data.uid is string
+      && data.uid.size() >= 1 && data.uid.size() <= 128
+      && data.uid == userId
+      && data.displayName is string
+      && data.displayName.size() >= 1 && data.displayName.size() <= 60
+      && data.cartoucheName is string
+      && data.cartoucheName.size() >= 1 && data.cartoucheName.size() <= 18
+      && data.email is string
+      && data.email.size() >= 3 && data.email.size() <= 160
+      && data.role is string
+      && data.role in ['admin', 'player']
+      && data.bestScore is number
+      && data.bestScore >= 0 && data.bestScore <= 10000000
+      && data.chambersClearedMax is number
+      && data.chambersClearedMax >= 0 && data.chambersClearedMax <= 5
+      && data.gamesPlayed is number
+      && data.gamesPlayed >= 0 && data.gamesPlayed <= 1000000
+      && data.createdAt is timestamp
+      && data.updatedAt is timestamp;
+    }
+
+    function isValidAdminRecord(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'grantedBy', 'createdAt'])
+      && data.keys().hasOnly(['uid', 'email', 'grantedBy', 'createdAt'])
+      && data.uid is string
+      && data.uid.size() >= 1 && data.uid.size() <= 128
+      && data.uid == userId
+      && data.email is string
+      && data.email.size() >= 3 && data.email.size() <= 160
+      && data.grantedBy is string
+      && data.grantedBy.size() >= 1 && data.grantedBy.size() <= 128
+      && data.createdAt is timestamp;
+    }
+
+    function isValidExpeditionRun(data, userId) {
+      return data.keys().hasAll([
+        'uid',
+        'cartoucheName',
+        'score',
+        'chambersCleared',
+        'combos',
+        'relicCount',
+        'victory',
+        'createdAt'
+      ])
+      && data.keys().hasOnly([
+        'uid',
+        'cartoucheName',
+        'score',
+        'chambersCleared',
+        'combos',
+        'relicCount',
+        'victory',
+        'createdAt'
+      ])
+      && data.uid is string
+      && data.uid.size() >= 1 && data.uid.size() <= 128
+      && data.uid == request.auth.uid
+      && data.uid == userId
+      && data.cartoucheName is string
+      && data.cartoucheName.size() >= 1 && data.cartoucheName.size() <= 18
+      && data.score is number
+      && data.score >= 0 && data.score <= 10000000
+      && data.chambersCleared is number
+      && data.chambersCleared >= 0 && data.chambersCleared <= 5
+      && data.combos is number
+      && data.combos >= 0 && data.combos <= 100
+      && data.relicCount is number
+      && data.relicCount >= 0 && data.relicCount <= 10
+      && data.victory is bool
+      && data.createdAt is timestamp;
+    }
+
+    match /admins/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isBootstrappedAdmin();
+      allow create: if isValidId(userId)
+        && isValidAdminRecord(incoming(), userId)
+        && incoming().createdAt == request.time
+        && (
+          (isBootstrappedAdmin() && request.auth.uid == userId && incoming().grantedBy == 'bootstrap') ||
+          isAdmin()
+        );
+      allow update: if false;
+      allow delete: if isValidId(userId) && isAdmin() && userId != request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isBootstrappedAdmin() || (isVerifiedUser() && existing().uid == request.auth.uid);
+
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && (
+          incoming().role == 'player' ||
+          (incoming().role == 'admin' && isBootstrappedAdmin())
+        );
+
+      allow update: if isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (
+            isOwner(userId)
+            && incoming().role == existing().role
+            && (
+              incoming().diff(existing()).affectedKeys().hasOnly(['cartoucheName', 'displayName', 'updatedAt']) ||
+              incoming().diff(existing()).affectedKeys().hasOnly(['bestScore', 'chambersClearedMax', 'gamesPlayed', 'cartoucheName', 'updatedAt'])
+            )
+          ) ||
+          (
+            isAdmin()
+            && (
+              incoming().diff(existing()).affectedKeys().hasOnly(['role', 'updatedAt']) ||
+              incoming().diff(existing()).affectedKeys().hasOnly(['bestScore', 'chambersClearedMax', 'gamesPlayed', 'updatedAt'])
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /runs/{runId} {
+        allow get: if isValidId(userId) && isValidId(runId) && (
+          (isOwner(userId) && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid) ||
+          isAdmin()
+        );
+
+        allow list: if isValidId(userId) && (
+          (isOwner(userId) && existing().uid == request.auth.uid) ||
+          isBootstrappedAdmin()
+        );
+
+        allow create: if isValidId(userId) && isValidId(runId)
+          && isOwner(userId)
+          && isValidExpeditionRun(incoming(), userId)
+          && incoming().createdAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update: if false;
+        allow delete: if false;
+      }
+    }
+  }
+}

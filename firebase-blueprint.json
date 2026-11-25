@@ -1,0 +1,178 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private explorer profile, RBAC role, and cumulative progression stats for an authenticated player.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the player."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Explorer display name."
+        },
+        "cartoucheName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 18,
+          "description": "Explorer name engraved in the hieroglyphic cartouche."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 160,
+          "description": "Verified player email address."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "player"],
+          "description": "Access role; only trusted admins may hold or assign 'admin'."
+        },
+        "bestScore": {
+          "type": "number",
+          "description": "Highest Ma'at score achieved."
+        },
+        "chambersClearedMax": {
+          "type": "number",
+          "description": "Highest number of sacred chambers cleared in a single run (0-5)."
+        },
+        "gamesPlayed": {
+          "type": "number",
+          "description": "Total completed or attempted expeditions."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last update timestamp."
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "cartoucheName",
+        "email",
+        "role",
+        "bestScore",
+        "chambersClearedMax",
+        "gamesPlayed",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted administrator grant record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the administrator."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 160,
+          "description": "Email of the administrator."
+        },
+        "grantedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UID or bootstrap identifier of the granter."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of admin grant."
+        }
+      },
+      "required": ["uid", "email", "grantedBy", "createdAt"]
+    },
+    "ExpeditionRun": {
+      "title": "ExpeditionRun",
+      "description": "Recorded expedition attempt belonging to a player.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "cartoucheName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 18,
+          "description": "Cartouche name used during the run."
+        },
+        "score": {
+          "type": "number",
+          "description": "Final Ma'at score."
+        },
+        "chambersCleared": {
+          "type": "number",
+          "description": "Number of chambers cleared (0-5)."
+        },
+        "combos": {
+          "type": "number",
+          "description": "Hieroglyph seals collected in order."
+        },
+        "relicCount": {
+          "type": "number",
+          "description": "Sacred relics acquired."
+        },
+        "victory": {
+          "type": "boolean",
+          "description": "Whether the player cleared all 5 chambers."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the recorded expedition."
+        }
+      },
+      "required": [
+        "uid",
+        "cartoucheName",
+        "score",
+        "chambersCleared",
+        "combos",
+        "relicCount",
+        "victory",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Player profile, RBAC role, and lifetime stats isolated per user and accessible to admins."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Trusted administrator grant records."
+    },
+    "/users/{userId}/runs/{runId}": {
+      "schema": { "$ref": "#/entities/ExpeditionRun" },
+      "description": "Per-player expedition history subcollection."
+    }
+  }
+}

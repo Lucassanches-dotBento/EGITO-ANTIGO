@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- TAILWIND CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <title>Antigo Egito</title>
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: linear-gradient(to bottom, #1a1200, #3d2a00);
+      overflow-x: hidden;
+    }
+
+    /* Fundo animado */
+    .stars {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(white 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.08;
+      animation: moveStars 50s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes moveStars {
+      from {
+        transform: translateY(0);
+      }
+
+      to {
+        transform: translateY(-1000px);
+      }
+    }
+
+    /* Efeito dourado */
+    .gold-glow {
+      text-shadow:
+        0 0 10px gold,
+        0 0 20px orange,
+        0 0 40px yellow;
+    }
+
+    /* Hover mágico */
+    .card-hover:hover {
+      transform: translateY(-10px) scale(1.03);
+      transition: 0.4s;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    }
+
+    /* Pirâmide flutuante */
+    .pyramid {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-15px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+  </style>
+</head>
+
+<body class="text-white">
+
+  <!-- FUNDO -->
+  <div class="stars"></div>
+
+  <!-- HEADER -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md border-b border-yellow-700">
+
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center text-black text-2xl">
+          ☀️
+        </div>
+
+        <h1 class="text-2xl font-bold text-yellow-300 gold-glow">
+          EGITO ANTIGO
+        </h1>
+      </div>
+
+      <ul class="hidden md:flex gap-8 text-yellow-200">
+        <li><a href="#inicio" class="hover:text-white">Início</a></li>
+        <li><a href="#deuses" class="hover:text-white">Deuses</a></li>
+        <li><a href="#video" class="hover:text-white">Vídeo</a></li>
+        <li><a href="#galeria" class="hover:text-white">Galeria</a></li>
+      </ul>
+
+
+      <select id="languageSelector" aria-label="Choose language"
+        class="bg-black/80 text-yellow-200 border border-yellow-600 rounded-lg px-3 py-2">
+        <option value="pt">🇧🇷 Português</option>
+        <option value="en">🇺🇸 English</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="it">🇮🇹 Italiano</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="zh">🇨🇳 中文</option>
+        <option value="ru">🇷🇺 Русский</option>
+        <option value="ar">🇸🇦 العربية</option>
+      </select>
+
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section id="inicio"
+    class="relative h-screen flex items-center justify-center text-center px-6 overflow-hidden">
+
+    <img
+      src="https://images.unsplash.com/photo-1572252009286-268acec5ca0a?q=80&w=1600&auto=format&fit=crop"
+      class="absolute inset-0 w-full h-full object-cover opacity-40">
+
+    <div class="absolute inset-0 bg-black/60"></div>
+
+    <div class="relative z-10 max-w-4xl">
+
+      <div class="text-8xl mb-6 pyramid">
+        🔺
+      </div>
+
+      <h1 class="text-6xl md:text-8xl font-black text-yellow-300 gold-glow mb-6">
+        O IMPÉRIO DO EGITO
+      </h1>
+
+      <p class="text-2xl text-yellow-100 mb-8">
+        Pirâmides • Deuses • Faraós • Mistérios
+      </p>
+
+      <a href="#deuses"
+        class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-full text-xl transition-all">
+        Explorar Agora ⚡
+      </a>
+
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="py-24 px-6 bg-gradient-to-b from-black to-amber-950">
+
+    <div class="max-w-6xl mx-auto">
+
+      <h2 class="text-5xl font-bold text-center text-yellow-300 mb-12 gold-glow">
+        📜 História do Egito
+      </h2>
+
+      <div class="grid md:grid-cols-2 gap-10 items-center">
+
+        <img
+          src="https://images.unsplash.com/photo-1568322445389-f64ac2515020?q=80&w=1200&auto=format&fit=crop"
+          class="rounded-3xl shadow-2xl border-4 border-yellow-600">
+
+        <div>
+
+          <p class="text-lg leading-9 text-yellow-100">
+            O Antigo Egito foi uma das civilizações mais poderosas da humanidade.
+            Localizado próximo ao Rio Nilo, o povo egípcio construiu templos,
+            pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática,
+            astronomia e arquitetura.
+          </p>
+
+          <div class="mt-8 bg-yellow-500/10 border border-yellow-600 p-6 rounded-2xl">
+            <h3 class="text-2xl text-yellow-300 mb-4">
+              🌞 Curiosidade
+            </h3>
+
+            <p class="text-yellow-100">
+              As pirâmides eram consideradas portais sagrados para a vida após a morte.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- DEUSES -->
+  <section id="deuses" class="py-24 px-6">
+
+    <div class="max-w-7xl mx-auto">
+
+      <h2 class="text-5xl font-bold text-center text-yellow-300 mb-16 gold-glow">
+        ⚡ Deuses Egípcios ⚡
+      </h2>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+        <!-- ANUBIS -->
+        <div class="bg-black/60 border border-yellow-700 rounded-3xl overflow-hidden card-hover">
+
+          <img
+            src="anubis.jpg"
+            class="w-full h-72 object-cover bg-white">
+
+          <div class="p-6">
+
+            <h3 class="text-3xl text-yellow-300 mb-3">
+              Anúbis
+            </h3>
+
+            <p class="text-yellow-100">
+             Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris.
+
+Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.
+            </p>
+
+          </div>
+        </div>
+
+        <!-- RÁ -->
+        <div class="bg-black/60 border border-yellow-700 rounded-3xl overflow-hidden card-hover">
+
+          <img
+            src="ra.jpg"
+            class="w-full h-72 object-cover bg-white">
+
+          <div class="p-6">
+
+            <h3 class="text-3xl text-yellow-300 mb-3">
+              Rá
+            </h3>
+
+            <p class="text-yellow-100">
+              principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos.
+
+As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância.
+
+Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis.
+
+Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.
+            </p>
+
+          </div>
+        </div>
+
+        <!-- HÓRUS -->
+        <div class="bg-black/60 border border-yellow-700 rounded-3xl overflow-hidden card-hover">
+
+          <img
+            src="horus.jpg"
+            class="w-full h-72 object-cover bg-white">
+
+          <div class="p-6">
+
+            <h3 class="text-3xl text-yellow-300 mb-3">
+              Hórus
+            </h3>
+
+            <p class="text-yellow-100">
+              O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza.
+
+A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação.
+
+Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.
+            </p>
+
+          </div>
+        </div>
+
+        <!-- BASTET -->
+        <div class="bg-black/60 border border-yellow-700 rounded-3xl overflow-hidden card-hover">
+
+          <img
+            src="bastet.jpg"
+            class="w-full h-72 object-cover bg-white">
+
+          <div class="p-6">
+
+            <h3 class="text-3xl text-yellow-300 mb-3">
+               Bastet
+            </h3>
+
+            <p class="text-yellow-100">
+              O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza.
+
+A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação.
+
+Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.
+            </p>
+
+          </div>
+        </div>
+
+
+        <!-- OSÍRIS -->
+        <div class="bg-black/60 border border-yellow-700 rounded-3xl overflow-hidden card-hover">
+
+          <img
+            src="osiris.jpg"
+            class="w-full h-72 object-cover bg-white">
+
+          <div class="p-6">
+
+            <h3 class="text-3xl text-yellow-300 mb-3">
+              Osíris
+            </h3>
+
+            <p class="text-yellow-100">
+              Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia.
+
+Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.
+            </p>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- VIDEO -->
+  <section id="video" class="py-24 px-6 bg-black/50">
+
+    <div class="max-w-6xl mx-auto text-center">
+
+      <h2 class="text-5xl font-bold text-yellow-300 mb-12 gold-glow">
+        🎥 Vídeo Sobre o Egito
+      </h2>
+
+      <div class="rounded-3xl overflow-hidden border-4 border-yellow-600 shadow-2xl">
+
+        <iframe
+          width="100%"
+          height="600"
+          src="https://www.youtube.com/embed/c1g60SSGmeY"
+          title="Egito Antigo"
+          frameborder="0"
+          allowfullscreen>
+        </iframe>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- GALERIA -->
+  <section id="galeria" class="py-24 px-6">
+
+    <div class="max-w-7xl mx-auto">
+
+      <h2 class="text-5xl font-bold text-center text-yellow-300 mb-16 gold-glow">
+        🖼️ Galeria do Egito
+      </h2>
+
+      <div class="grid md:grid-cols-3 gap-8">
+
+        <img
+          src="https://images.unsplash.com/photo-1697453809017-4f65bd6d7f45?q=80&w=1200&auto=format&fit=crop"
+          class="rounded-3xl border-4 border-yellow-700 hover:scale-105 transition-all">
+
+        <img
+          src="https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=1200&auto=format&fit=crop"
+          class="rounded-3xl border-4 border-yellow-700 hover:scale-105 transition-all">
+
+        <img
+          src="https://images.unsplash.com/photo-1579606032821-4e6161c81bd3?q=80&w=1200&auto=format&fit=crop"
+          class="rounded-3xl border-4 border-yellow-700 hover:scale-105 transition-all">
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- TRADUTOR -->
+  <section class="py-24 px-6 bg-black/50">
+
+    <div class="max-w-3xl mx-auto text-center">
+
+      <h2 class="text-5xl font-bold text-yellow-300 mb-10 gold-glow">
+        ✍️ Nome em Hieróglifos
+      </h2>
+
+      <input
+        type="text"
+        id="nome"
+        placeholder="Digite seu nome..."
+        class="w-full p-5 rounded-2xl bg-black border-2 border-yellow-600 text-yellow-200 text-xl text-center">
+
+      <button
+        onclick="traduzirNome()"
+        class="mt-6 bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-10 py-4 rounded-full text-xl">
+        Traduzir ⚡
+      </button>
+
+      <div
+        id="resultado"
+        class="mt-10 text-5xl text-yellow-300 bg-black/60 p-10 rounded-3xl border border-yellow-700">
+      </div>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-black py-10 text-center border-t border-yellow-700">
+
+    <h3 class="text-3xl text-yellow-300 mb-4">
+      ☀️ Antigo Egito ☀️
+    </h3>
+
+    <p class="text-yellow-100">
+      Site criado em HTML + Tailwind CSS
+    </p>
+
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+
+    const hieroglifos = {
+  a:"𓄿", b:"𓃀", c:"𓎡", d:"𓂧", e:"𓇋", f:"𓆑", g:"𓎼",
+  h:"𓉔", i:"𓇋", j:"𓆓", k:"𓎡", l:"𓃭", m:"𓅓", n:"𓈖",
+  o:"𓍯", p:"𓊪", q:"𓈎", r:"𓂋", s:"𓋴", t:"𓏏", u:"𓅱",
+  v:"𓆑", w:"𓅱", x:"𓎡𓋴", y:"𓇋", z:"𓊃"
+};
+
+function traduzirNome(){
+  const campo=document.getElementById("nome");
+  const resultado=document.getElementById("resultado");
+  if(!campo || !resultado) return;
+  const nome=campo.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+  if(!nome){ resultado.innerHTML="𓄿"; return; }
+  let saida="";
+  for(const letra of nome){
+    if(hieroglifos[letra]) saida += hieroglifos[letra] + " ";
+    else if(letra === " ") saida += "　";
+  }
+  resultado.innerHTML = saida || "𓄿";
+}
+
+document.getElementById("nome")?.addEventListener("keydown", function(e){
+  if(e.key === "Enter") traduzirNome();
+});
+
+  </script>
+
+ <!-- CONTACT SECTION -->
+    <section id="contato" class="py-20 bg-gradient-to-b from-white to-amber-50">
+      <div class="container mx-auto px-4">
+        <h2 class="text-4xl text-center text-amber-900 mb-4">Entre em Contato</h2>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="bg-white rounded-lg shadow-xl p-8 border-t-4 border-amber-600">
+            <form class="space-y-6">
+              <div>
+                <label class="flex items-center gap-2 text-amber-800 mb-2">Nome</label>
+                <input type="text" 
+                       name="name" 
+                       required 
+                       placeholder="Seu nome completo"
+                       class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg focus:border-amber-600 focus:outline-none transition-colors">
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 text-amber-800 mb-2">Email</label>
+                <input type="email" 
+                       name="email" 
+                       required 
+                       placeholder="seu@email.com"
+                       class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg focus:border-amber-600 focus:outline-none transition-colors">
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 text-amber-800 mb-2">Mensagem</label>
+                <textarea name="message" 
+                          required 
+                          placeholder="Escreva sua mensagem aqui..." 
+                          rows="5"
+                          class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg focus:border-amber-600 focus:outline-none transition-colors resize-none"></textarea>
+              </div>
+
+              <button type="submit" 
+                      class="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                Enviar Mensagem
+              </button>
+            </form>
+          </div>
+
+          <div class="space-y-6">
+            <div class="bg-gradient-to-br from-amber-100 to-amber-50 rounded-lg p-6 border-2 border-amber-200">
+              <h3 class="text-amber-900 mb-4">Informações</h3>
+              <div>
+                <h4 class="text-amber-800">Email</h4>
+                <p class="text-sm break-all">
+                  <span class="text-amber-700">Lucas:20261ac0080020@estudantes.ifpr.edu.br</span>
+                </p>
+                <p class="text-sm break-all mt-1">
+                  <span class="text-amber-700">Bento: +55(44)97658045 20261ac0080019@estudantes.ifpr.edu.br</span>
+                </p>
+                <p class="text-sm break-all mt-1">
+                  <span class="text-amber-700">Mikael +55(44)999722477: 20261ac0080070@estudantes.ifpr.edu.br</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+
+<script>
+const siteTranslations = {"pt":{"EGITO ANTIGO":"EGITO ANTIGO","Início":"Início","Deuses":"Deuses","Vídeo":"Vídeo","Galeria":"Galeria","O IMPÉRIO DO EGITO":"O IMPÉRIO DO EGITO","Pirâmides • Deuses • Faraós • Mistérios":"Pirâmides • Deuses • Faraós • Mistérios","Explorar Agora ⚡":"Explorar Agora ⚡","📜 História do Egito":"📜 História do Egito","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.","🌞 Curiosidade":"🌞 Curiosidade","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"As pirâmides eram consideradas portais sagrados para a vida após a morte.","⚡ Deuses Egípcios ⚡":"⚡ Deuses Egípcios ⚡","Anúbis":"Anúbis","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.","Rá":"Rá","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.","Hórus":"Hórus","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.","Bastet":"Bastet","Osíris":"Osíris","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.","🎥 Vídeo Sobre o Egito":"🎥 Vídeo Sobre o Egito","🖼️ Galeria do Egito":"🖼️ Galeria do Egito","✍️ Nome em Hieróglifos":"✍️ Nome em Hieróglifos","Digite seu nome...":"Digite seu nome...","Traduzir ⚡":"Traduzir ⚡","☀️ Antigo Egito ☀️":"☀️ Antigo Egito ☀️","Site criado em HTML + Tailwind CSS":"Site criado em HTML + Tailwind CSS","Entre em Contato":"Entre em Contato","Nome":"Nome","Seu nome completo":"Seu nome completo","Email":"Email","Mensagem":"Mensagem","Escreva sua mensagem aqui...":"Escreva sua mensagem aqui...","Enviar Mensagem":"Enviar Mensagem","Informações":"Informações"},"en":{"EGITO ANTIGO":"ANCIENT EGYPT","Início":"Home","Deuses":"Gods","Vídeo":"Video","Galeria":"Gallery","O IMPÉRIO DO EGITO":"THE EMPIRE OF EGYPT","Pirâmides • Deuses • Faraós • Mistérios":"Pyramids • Gods • Pharaohs • Mysteries","Explorar Agora ⚡":"Explore Now ⚡","📜 História do Egito":"📜 History of Egypt","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"Ancient Egypt was one of the most powerful civilizations in human history. Located along the Nile River, the Egyptian people built temples and enormous pyramids and developed advanced knowledge of mathematics, astronomy, and architecture.","🌞 Curiosidade":"🌞 Fun Fact","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"The pyramids were considered sacred gateways to the afterlife.","⚡ Deuses Egípcios ⚡":"⚡ Egyptian Gods ⚡","Anúbis":"Anubis","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Anubis, also called Anpu, is the Egyptian god who protects, guards, and guides the dead. In Egyptian mythology, he helps the dead meet Osiris. He is associated with the Eye of Horus and with funerary rites, including the mummification of pharaohs.","Rá":"Ra","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"Ra was a principal deity of ancient Egyptian religion. Worship of the Sun God flourished in Egypt and remained a major form of worship for many centuries. Because sunlight was essential to growing food, the ancient Egyptians gave Ra great importance. He was a central deity of the Egyptian pantheon and a primordial creator associated with divine order. Over time, Ra was combined with other gods, including Horus, Sobek, Amun, and Khnum. His role was closely connected to kingship: tradition held that he ruled Egypt from Heliopolis before the historical dynasties, whose pharaohs were considered his descendants.","Hórus":"Horus","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"Horus is the sky and solar god and one of the most important figures in Egyptian mythology. Associated with the heavens, he represents light, power, and kingship. The pharaoh was often regarded as the earthly embodiment of Horus. The god was known by several names depending on the place and tradition of worship.","Bastet":"Bastet","Osíris":"Osiris","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Osiris is the god of judgment, the afterlife, and vegetation, and is one of the most important and popular deities in Egyptian mythology. His worship was widespread and is recorded from around 2400 BCE. Many temples were built in his honor.","🎥 Vídeo Sobre o Egito":"🎥 Video About Egypt","🖼️ Galeria do Egito":"🖼️ Egypt Gallery","✍️ Nome em Hieróglifos":"✍️ Name in Hieroglyphs","Digite seu nome...":"Enter your name...","Traduzir ⚡":"Translate ⚡","☀️ Antigo Egito ☀️":"☀️ Ancient Egypt ☀️","Site criado em HTML + Tailwind CSS":"Website created with HTML + Tailwind CSS","Entre em Contato":"Contact Us","Nome":"Name","Seu nome completo":"Your full name","Email":"Email","Mensagem":"Message","Escreva sua mensagem aqui...":"Write your message here...","Enviar Mensagem":"Send Message","Informações":"Information"},"es":{"EGITO ANTIGO":"ANTIGUO EGIPTO","Início":"Inicio","Deuses":"Dioses","Vídeo":"Vídeo","Galeria":"Galería","O IMPÉRIO DO EGITO":"EL IMPERIO DE EGIPTO","Pirâmides • Deuses • Faraós • Mistérios":"Pirámides • Dioses • Faraones • Misterios","Explorar Agora ⚡":"Explorar Ahora ⚡","📜 História do Egito":"📜 Historia de Egipto","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"El Antiguo Egipto fue una de las civilizaciones más poderosas de la humanidad. Situado cerca del río Nilo, el pueblo egipcio construyó templos y enormes pirámides y desarrolló conocimientos avanzados de matemáticas, astronomía y arquitectura.","🌞 Curiosidade":"🌞 Curiosidad","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"Las pirámides eran consideradas portales sagrados hacia la vida después de la muerte.","⚡ Deuses Egípcios ⚡":"⚡ Dioses egipcios ⚡","Anúbis":"Anubis","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Anubis, también llamado Anpu, es el dios egipcio protector, guardián y guía de los muertos. En la mitología egipcia ayuda a los difuntos a encontrarse con Osiris. Se le asocia con el Ojo de Horus y con los ritos funerarios, como la momificación de los faraones.","Rá":"Ra","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"Ra fue una de las principales divinidades de la religión egipcia. Su culto como dios del Sol tuvo gran importancia durante muchos siglos. Como la luz solar era esencial para los cultivos, los antiguos egipcios le otorgaron un papel destacado. Era una figura central del panteón y un dios creador asociado al orden divino. Con el tiempo se vinculó con Horus, Sobek, Amón y Jnum. También estuvo estrechamente relacionado con la realeza: según la tradición, gobernó Egipto desde Heliópolis antes de las dinastías históricas.","Hórus":"Horus","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"Horus es el dios del cielo y del Sol, y una de las figuras más importantes de la mitología egipcia. Asociado al firmamento, representa la luz, el poder y la realeza. El faraón era considerado a menudo la representación terrenal de Horus. Este dios tuvo varios nombres según el lugar y la tradición de culto.","Bastet":"Bastet","Osíris":"Osiris","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Osiris es el dios del juicio, del más allá y de la vegetación, y una de las divinidades más importantes y populares de la mitología egipcia. Su culto fue muy común y está documentado desde alrededor del 2400 a. C. Se construyeron numerosos templos en su honor.","🎥 Vídeo Sobre o Egito":"🎥 Vídeo sobre Egipto","🖼️ Galeria do Egito":"🖼️ Galería de Egipto","✍️ Nome em Hieróglifos":"✍️ Nombre en jeroglíficos","Digite seu nome...":"Escribe tu nombre...","Traduzir ⚡":"Traducir ⚡","☀️ Antigo Egito ☀️":"☀️ Antiguo Egipto ☀️","Site criado em HTML + Tailwind CSS":"Sitio creado con HTML + Tailwind CSS","Entre em Contato":"Contacto","Nome":"Nombre","Seu nome completo":"Tu nombre completo","Email":"Correo electrónico","Mensagem":"Mensaje","Escreva sua mensagem aqui...":"Escribe tu mensaje aquí...","Enviar Mensagem":"Enviar mensaje","Informações":"Información"},"fr":{"EGITO ANTIGO":"ÉGYPTE ANCIENNE","Início":"Accueil","Deuses":"Dieux","Vídeo":"Vidéo","Galeria":"Galerie","O IMPÉRIO DO EGITO":"L’EMPIRE D’ÉGYPTE","Pirâmides • Deuses • Faraós • Mistérios":"Pyramides • Dieux • Pharaons • Mystères","Explorar Agora ⚡":"Explorer maintenant ⚡","📜 História do Egito":"📜 Histoire de l’Égypte","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"L’Égypte ancienne fut l’une des civilisations les plus puissantes de l’humanité. Situé près du Nil, le peuple égyptien construisit des temples et d’immenses pyramides et développa des connaissances avancées en mathématiques, astronomie et architecture.","🌞 Curiosidade":"🌞 Le saviez-vous ?","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"Les pyramides étaient considérées comme des portes sacrées vers l’au-delà.","⚡ Deuses Egípcios ⚡":"⚡ Dieux égyptiens ⚡","Anúbis":"Anubis","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Anubis, également appelé Anoupou, est le dieu égyptien qui protège, garde et guide les morts. Dans la mythologie égyptienne, il aide les défunts à rencontrer Osiris. Il est associé à l’œil d’Horus et aux rites funéraires, notamment à la momification des pharaons.","Rá":"Rê","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"Rê était une divinité majeure de la religion égyptienne. Son culte en tant que dieu du Soleil fut très important pendant de nombreux siècles. La lumière solaire étant essentielle aux cultures, les anciens Égyptiens lui accordaient une grande place. Il était au centre du panthéon et associé à la création et à l’ordre divin. Au fil du temps, il fut associé à Horus, Sobek, Amon et Khnoum. Il était également lié à la royauté : selon la tradition, il aurait régné depuis Héliopolis avant les dynasties historiques.","Hórus":"Horus","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"Horus est le dieu du ciel et du Soleil, et l’une des figures majeures de la mythologie égyptienne. Associé au firmament, il représente la lumière, le pouvoir et la royauté. Le pharaon était souvent considéré comme son incarnation terrestre. Le dieu portait plusieurs noms selon les lieux et les traditions de culte.","Bastet":"Bastet","Osíris":"Osiris","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Osiris est le dieu du jugement, de l’au-delà et de la végétation. Il compte parmi les divinités les plus importantes et populaires de la mythologie égyptienne. Son culte, très répandu, est attesté dès environ 2400 av. J.-C. De nombreux temples furent construits en son honneur.","🎥 Vídeo Sobre o Egito":"🎥 Vidéo sur l’Égypte","🖼️ Galeria do Egito":"🖼️ Galerie de l’Égypte","✍️ Nome em Hieróglifos":"✍️ Nom en hiéroglyphes","Digite seu nome...":"Entrez votre nom...","Traduzir ⚡":"Traduire ⚡","☀️ Antigo Egito ☀️":"☀️ Égypte ancienne ☀️","Site criado em HTML + Tailwind CSS":"Site créé avec HTML + Tailwind CSS","Entre em Contato":"Contactez-nous","Nome":"Nom","Seu nome completo":"Votre nom complet","Email":"E-mail","Mensagem":"Message","Escreva sua mensagem aqui...":"Écrivez votre message ici...","Enviar Mensagem":"Envoyer le message","Informações":"Informations"},"de":{"EGITO ANTIGO":"ALTES ÄGYPTEN","Início":"Startseite","Deuses":"Götter","Vídeo":"Video","Galeria":"Galerie","O IMPÉRIO DO EGITO":"DAS REICH ÄGYPTEN","Pirâmides • Deuses • Faraós • Mistérios":"Pyramiden • Götter • Pharaonen • Geheimnisse","Explorar Agora ⚡":"Jetzt erkunden ⚡","📜 História do Egito":"📜 Geschichte Ägyptens","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"Das Alte Ägypten war eine der mächtigsten Zivilisationen der Menschheitsgeschichte. Am Nil gelegen, errichteten die Ägypter Tempel und gewaltige Pyramiden und entwickelten fortgeschrittene Kenntnisse in Mathematik, Astronomie und Architektur.","🌞 Curiosidade":"🌞 Wissenswertes","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"Die Pyramiden galten als heilige Tore zum Leben nach dem Tod.","⚡ Deuses Egípcios ⚡":"⚡ Ägyptische Götter ⚡","Anúbis":"Anubis","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Anubis, auch Anpu genannt, ist der ägyptische Gott, der die Toten beschützt, bewacht und geleitet. In der ägyptischen Mythologie hilft er den Verstorbenen bei ihrer Begegnung mit Osiris. Er wird mit dem Auge des Horus und mit Bestattungsriten wie der Mumifizierung der Pharaonen verbunden.","Rá":"Re","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"Re war eine der wichtigsten Gottheiten der ägyptischen Religion. Seine Verehrung als Sonnengott war über viele Jahrhunderte bedeutend. Da Sonnenlicht für den Ackerbau unerlässlich war, maßen ihm die alten Ägypter große Bedeutung bei. Er gehörte zum Zentrum des ägyptischen Pantheons und galt als Schöpfergott, der mit der göttlichen Ordnung verbunden war. Im Laufe der Zeit wurde er mit Horus, Sobek, Amun und Chnum verbunden. Auch zur Königsherrschaft bestand eine enge Verbindung.","Hórus":"Horus","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"Horus ist der Himmels- und Sonnengott und eine der wichtigsten Gestalten der ägyptischen Mythologie. Er ist mit dem Himmel verbunden und steht für Licht, Macht und Königtum. Der Pharao galt oft als irdische Verkörperung des Horus. Je nach Kultort und Tradition hatte der Gott verschiedene Namen.","Bastet":"Bastet","Osíris":"Osiris","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Osiris ist der Gott des Gerichts, des Jenseits und der Vegetation und zählt zu den wichtigsten und beliebtesten Gottheiten der ägyptischen Mythologie. Sein weit verbreiteter Kult ist seit etwa 2400 v. Chr. belegt. Viele Tempel wurden ihm zu Ehren errichtet.","🎥 Vídeo Sobre o Egito":"🎥 Video über Ägypten","🖼️ Galeria do Egito":"🖼️ Ägypten-Galerie","✍️ Nome em Hieróglifos":"✍️ Name in Hieroglyphen","Digite seu nome...":"Gib deinen Namen ein...","Traduzir ⚡":"Übersetzen ⚡","☀️ Antigo Egito ☀️":"☀️ Altes Ägypten ☀️","Site criado em HTML + Tailwind CSS":"Website erstellt mit HTML + Tailwind CSS","Entre em Contato":"Kontakt","Nome":"Name","Seu nome completo":"Dein vollständiger Name","Email":"E-Mail","Mensagem":"Nachricht","Escreva sua mensagem aqui...":"Schreibe deine Nachricht hier...","Enviar Mensagem":"Nachricht senden","Informações":"Informationen"},"it":{"EGITO ANTIGO":"ANTICO EGITTO","Início":"Inizio","Deuses":"Dei","Vídeo":"Video","Galeria":"Galleria","O IMPÉRIO DO EGITO":"L’IMPERO D’EGITTO","Pirâmides • Deuses • Faraós • Mistérios":"Piramidi • Dei • Faraoni • Misteri","Explorar Agora ⚡":"Esplora ora ⚡","📜 História do Egito":"📜 Storia dell’Egitto","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"L’Antico Egitto fu una delle civiltà più potenti della storia umana. Situato vicino al Nilo, il popolo egizio costruì templi e immense piramidi e sviluppò conoscenze avanzate in matematica, astronomia e architettura.","🌞 Curiosidade":"🌞 Curiosità","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"Le piramidi erano considerate portali sacri verso l’aldilà.","⚡ Deuses Egípcios ⚡":"⚡ Dei egizi ⚡","Anúbis":"Anubi","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Anubi, chiamato anche Anpu, è il dio egizio che protegge, custodisce e guida i morti. Nella mitologia egizia aiuta i defunti a incontrare Osiride. È associato all’Occhio di Horus e ai riti funebri, compresa la mummificazione dei faraoni.","Rá":"Ra","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"Ra era una delle principali divinità della religione egizia. Il suo culto come dio del Sole fu molto importante per molti secoli. Poiché la luce solare era fondamentale per i raccolti, gli antichi egizi gli attribuivano grande importanza. Era al centro del pantheon ed era considerato un dio creatore legato all’ordine divino. Nel tempo fu associato a Horus, Sobek, Amon e Khnum. Era inoltre strettamente legato alla regalità.","Hórus":"Horus","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"Horus è il dio del cielo e del Sole, nonché una delle figure più importanti della mitologia egizia. Associato al firmamento, rappresenta luce, potere e regalità. Il faraone era spesso considerato la sua incarnazione terrena. Il dio era conosciuto con diversi nomi a seconda dei luoghi e delle tradizioni di culto.","Bastet":"Bastet","Osíris":"Osiride","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Osiride è il dio del giudizio, dell’aldilà e della vegetazione, ed è una delle divinità più importanti e popolari della mitologia egizia. Il suo culto era molto diffuso ed è attestato dal 2400 a.C. circa. Furono costruiti numerosi templi in suo onore.","🎥 Vídeo Sobre o Egito":"🎥 Video sull’Egitto","🖼️ Galeria do Egito":"🖼️ Galleria dell’Egitto","✍️ Nome em Hieróglifos":"✍️ Nome in geroglifici","Digite seu nome...":"Inserisci il tuo nome...","Traduzir ⚡":"Traduci ⚡","☀️ Antigo Egito ☀️":"☀️ Antico Egitto ☀️","Site criado em HTML + Tailwind CSS":"Sito creato con HTML + Tailwind CSS","Entre em Contato":"Contattaci","Nome":"Nome","Seu nome completo":"Il tuo nome completo","Email":"Email","Mensagem":"Messaggio","Escreva sua mensagem aqui...":"Scrivi qui il tuo messaggio...","Enviar Mensagem":"Invia messaggio","Informações":"Informazioni"},"ja":{"EGITO ANTIGO":"古代エジプト","Início":"ホーム","Deuses":"神々","Vídeo":"動画","Galeria":"ギャラリー","O IMPÉRIO DO EGITO":"エジプトの帝国","Pirâmides • Deuses • Faraós • Mistérios":"ピラミッド • 神々 • ファラオ • 謎","Explorar Agora ⚡":"今すぐ探検 ⚡","📜 História do Egito":"📜 エジプトの歴史","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"古代エジプトは、人類史上最も強大な文明の一つでした。ナイル川の近くに位置し、エジプトの人々は神殿や巨大なピラミッドを建設し、数学、天文学、建築に関する高度な知識を発展させました。","🌞 Curiosidade":"🌞 豆知識","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"ピラミッドは、死後の世界へ続く神聖な門と考えられていました。","⚡ Deuses Egípcios ⚡":"⚡ エジプトの神々 ⚡","Anúbis":"アヌビス","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"アヌビス（アンプとも呼ばれる）は、死者を守り、見守り、導くエジプトの神です。エジプト神話では、死者がオシリスに会うのを助けます。ホルスの目や、ファラオのミイラ作りを含む葬送儀礼と結び付けられています。","Rá":"ラー","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"ラーは古代エジプト宗教の主要な神でした。太陽神としての信仰は何世紀にもわたり栄えました。太陽の光は農作物の成長に欠かせなかったため、古代エジプト人はラーを非常に重要視しました。ラーは神々の中心的存在で、創造と神聖な秩序に関わる神でした。時代とともにホルス、ソベク、アメン、クヌムなどの神々と結び付けられました。","Hórus":"ホルス","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"ホルスは天空と太陽の神で、エジプト神話の最も重要な神の一柱です。天空と結び付き、光、力、王権を象徴します。ファラオはしばしばホルスの地上での化身とみなされました。信仰される地域や伝統によって、さまざまな名前で呼ばれました。","Bastet":"バステト","Osíris":"オシリス","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"オシリスは裁き、死後の世界、植物の神であり、エジプト神話で最も重要かつ人気のある神の一柱です。彼の信仰は広く、紀元前2400年頃から記録されています。彼をたたえる多くの神殿が建てられました。","🎥 Vídeo Sobre o Egito":"🎥 エジプトについての動画","🖼️ Galeria do Egito":"🖼️ エジプトのギャラリー","✍️ Nome em Hieróglifos":"✍️ ヒエログリフで名前","Digite seu nome...":"名前を入力...","Traduzir ⚡":"翻訳 ⚡","☀️ Antigo Egito ☀️":"☀️ 古代エジプト ☀️","Site criado em HTML + Tailwind CSS":"HTML + Tailwind CSSで作成されたウェブサイト","Entre em Contato":"お問い合わせ","Nome":"名前","Seu nome completo":"氏名を入力","Email":"メールアドレス","Mensagem":"メッセージ","Escreva sua mensagem aqui...":"ここにメッセージを入力...","Enviar Mensagem":"メッセージを送信","Informações":"情報"},"zh":{"EGITO ANTIGO":"古埃及","Início":"首页","Deuses":"众神","Vídeo":"视频","Galeria":"图库","O IMPÉRIO DO EGITO":"埃及帝国","Pirâmides • Deuses • Faraós • Mistérios":"金字塔 • 众神 • 法老 • 奥秘","Explorar Agora ⚡":"立即探索 ⚡","📜 História do Egito":"📜 埃及历史","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"古埃及是人类历史上最强大的文明之一。埃及人居住在尼罗河附近，建造了神庙和巨大的金字塔，并发展了数学、天文学和建筑方面的先进知识。","🌞 Curiosidade":"🌞 趣闻","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"金字塔被认为是通往来世的神圣门户。","⚡ Deuses Egípcios ⚡":"⚡ 埃及诸神 ⚡","Anúbis":"阿努比斯","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"阿努比斯（也称安普）是埃及神话中保护、守护并引导亡者的神。他帮助亡者与奥西里斯相会，并与荷鲁斯之眼及法老木乃伊制作等葬礼仪式有关。","Rá":"拉","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"拉是古埃及宗教中的主要神祇之一。作为太阳神，他受到长期而广泛的崇拜。阳光对农作物至关重要，因此古埃及人非常重视拉。他是埃及众神体系的核心神祇，也是与创造和神圣秩序有关的原初之神。后来，他与荷鲁斯、索贝克、阿蒙和克努姆等神祇融合。","Hórus":"荷鲁斯","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"荷鲁斯是天空与太阳之神，也是埃及神话中最重要的神祇之一。他与天空相关，象征光明、力量和王权。法老常被视为荷鲁斯在人间的化身。不同地区和崇拜传统中，他有多个名字。","Bastet":"巴斯特","Osíris":"奥西里斯","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"奥西里斯是审判、冥界和植物之神，也是埃及神话中最重要、最受欢迎的神祇之一。他的崇拜十分普遍，约从公元前2400年起便有记载。许多神庙都是为他而建。","🎥 Vídeo Sobre o Egito":"🎥 埃及介绍视频","🖼️ Galeria do Egito":"🖼️ 埃及图库","✍️ Nome em Hieróglifos":"✍️ 象形文字姓名","Digite seu nome...":"输入你的名字...","Traduzir ⚡":"翻译 ⚡","☀️ Antigo Egito ☀️":"☀️ 古埃及 ☀️","Site criado em HTML + Tailwind CSS":"使用 HTML + Tailwind CSS 创建的网站","Entre em Contato":"联系我们","Nome":"姓名","Seu nome completo":"你的全名","Email":"电子邮件","Mensagem":"留言","Escreva sua mensagem aqui...":"在此输入你的留言...","Enviar Mensagem":"发送消息","Informações":"信息"},"ru":{"EGITO ANTIGO":"ДРЕВНИЙ ЕГИПЕТ","Início":"Главная","Deuses":"Боги","Vídeo":"Видео","Galeria":"Галерея","O IMPÉRIO DO EGITO":"ИМПЕРИЯ ЕГИПТА","Pirâmides • Deuses • Faraós • Mistérios":"الأهرامات • الآلهة • الفراعنة • الأسرار","Explorar Agora ⚡":"Исследовать ⚡","📜 História do Egito":"📜 История Египта","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"Древний Египет был одной из самых могущественных цивилизаций в истории человечества. Расположенный у Нила, египетский народ строил храмы и огромные пирамиды, развивая знания в математике, астрономии и архитектуре.","🌞 Curiosidade":"🌞 Интересный факт","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"كانت الأهرامات تُعتبر بوابات مقدسة إلى الحياة الآخرة.","⚡ Deuses Egípcios ⚡":"⚡ Египетские боги ⚡","Anúbis":"Анубис","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"Анубис, также называемый Анпу, — египетский бог, защищающий и сопровождающий умерших. В мифологии он помогает душам встретиться с Осирисом. Его связывают с Оком Гора и погребальными обрядами, включая мумификацию фараонов.","Rá":"Ра","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"Ра был одним из главных божеств древнеегипетской религии. Его почитание как бога Солнца было особенно значимым на протяжении многих веков. Солнечный свет был необходим для земледелия, поэтому египтяне придавали ему большое значение. Ра занимал центральное место в пантеоне и считался богом-творцом, связанным с божественным порядком. Со временем его связывали с Гором, Себеком, Амоном и Хнумом.","Hórus":"Хор","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"Хор — бог неба и солнечный бог, одна из важнейших фигур египетской мифологии. Он связан с небом и символизирует свет, силу и царскую власть. Фараона часто считали земным воплощением Хора. В разных местах поклонения бога называли по-разному.","Bastet":"Бастет","Osíris":"Осирис","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"Осирис — бог суда, загробного мира и растительности, один из важнейших и наиболее почитаемых богов египетской мифологии. Его широко распространённый культ известен примерно с 2400 года до н. э. В его честь возводили многочисленные храмы.","🎥 Vídeo Sobre o Egito":"🎥 Видео о Египте","🖼️ Galeria do Egito":"🖼️ Галерея Египта","✍️ Nome em Hieróglifos":"✍️ Имя иероглифами","Digite seu nome...":"Введите имя...","Traduzir ⚡":"Перевести ⚡","☀️ Antigo Egito ☀️":"☀️ Древний Египет ☀️","Site criado em HTML + Tailwind CSS":"Сайт создан на HTML + Tailwind CSS","Entre em Contato":"Связаться с нами","Nome":"Имя","Seu nome completo":"Ваше полное имя","Email":"Электронная почта","Mensagem":"Сообщение","Escreva sua mensagem aqui...":"Напишите сообщение здесь...","Enviar Mensagem":"Отправить сообщение","Informações":"Информация"},"ar":{"EGITO ANTIGO":"مِصْرُ الْقَدِيمَةُ","Início":"الرئيسية","Deuses":"الآلهة","Vídeo":"فيديو","Galeria":"المعرض","O IMPÉRIO DO EGITO":"إمبراطورية مصر","Pirâmides • Deuses • Faraós • Mistérios":"الأهرامات • الآلهة • الفراعنة • الألغاز","Explorar Agora ⚡":"استكشف الآن ⚡","📜 História do Egito":"📜 تاريخ مصر","O Antigo Egito foi uma das civilizações mais poderosas da humanidade. Localizado próximo ao Rio Nilo, o povo egípcio construiu templos, pirâmides gigantescas e desenvolveu conhecimentos avançados em matemática, astronomia e arquitetura.":"كانت مصر القديمة إحدى أقوى الحضارات في تاريخ البشرية. وبالقرب من نهر النيل، بنى المصريون المعابد والأهرامات الضخمة وطوّروا معارف متقدمة في الرياضيات وعلم الفلك والهندسة المعمارية.","🌞 Curiosidade":"🌞 معلومة طريفة","As pirâmides eram consideradas portais sagrados para a vida após a morte.":"كانت الأهرامات تُعدّ بوابات مقدسة إلى الحياة بعد الموت.","⚡ Deuses Egípcios ⚡":"⚡ الآلهة المصرية ⚡","Anúbis":"أنوبيس","Anúbis, também chamado de Anupo, é o deus egípcio protetor, guardião e guia dos mortos. Na mitologia egípcia, ele auxilia os mortos no encontro com Osíris. Para isso, é associado ao olho de Hórus e também apontado como o deus dos ritos funerários, como o processo de mumificação dos faraós.":"أنوبيس، ويُسمّى أيضًا أنبو، هو الإله المصري الذي يحمي الموتى ويحرسهم ويرشدهم. وفي الأساطير المصرية يساعد الموتى على لقاء أوزوريس، ويرتبط بعين حورس وطقوس الدفن، ومنها تحنيط الفراعنة.","Rá":"رع","principal divindade da religião egípcia. O culto ao Deus Sol foi muito próspero no Egito, sendo a principal forma de adoração e um culto oficial por cerca de vinte séculos. As divindades geralmente estão ligados a fenômenos da natureza, e, em função da luz no cultivo dos alimentos, os antigos egípcios atribuíram a Rá grande importância. Além de ser a divindade central do panteão egípcio, Rá é também um deus primordial e criador dos deuses e da ordem divina, junto de sua esposa, a Deusa Ret (cujo nome é a versão feminina do nome Ré e pode ser a mesma divindade) originaram a genealogia: Shu e Tefnut, Geb e Nut, Osíris, Seth, Ísis e Néftis. Ao longo do tempo, esta divindade foi associado a outros deuses, como Hórus, Sobek (Sobek-Ré), Amon (Amon-Ré) e Khnum (Khnum-Ré) e sua existência está intimamente ligada à realeza, pois Rá teria vivido em Heliópolis e regido o Egito antes mesmo das dinastias históricas, das quais os faraós seriam seus descendentes.":"كان رع من أهم آلهة الديانة المصرية القديمة. وازدهرت عبادته بوصفه إله الشمس لقرون طويلة. ولأن ضوء الشمس ضروري لنمو المحاصيل، منحه المصريون القدماء مكانة عظيمة. وكان إلهًا محوريًا في مجمع الآلهة وارتبط بالخلق والنظام الإلهي. ومع مرور الزمن ارتبط بحورس وسوبك وآمون وخنوم، كما ارتبطت مكانته بالملكية.","Hórus":"حورس","O deus Hórus é o deus solar dos céus e um dos mais importantes da mitologia egípcia. A imagem de Hórus está associada ao firmamento, e portanto, ele representa a luz, o poder e a realeza. A partir de 2200 a.C., Hórus é elevado a símbolo do Egito unificado quando vence seu tio numa das batalhas, e o faraó, o rei egípcio, passa a ser tratado como sua encarnação. Esse deus adorado pelos egípcios é conhecido por vários nomes, os quais mudam conforme os locais de culto. Os mais usados são: Heru-sa-Aset, Her'ur, Hrw, Hr, Hor-Hekenu ou Ra-Hoor-Khuit.":"حورس هو إله السماء والشمس، ومن أهم شخصيات الأساطير المصرية. ويرتبط بالسماء ويرمز إلى النور والقوة والملكية. وكان يُنظر إلى الفرعون غالبًا بوصفه تجسيدًا أرضيًا له. عُرف هذا الإله بأسماء متعددة بحسب أماكن العبادة وتقاليدها.","Bastet":"باستيت","Osíris":"أوزوريس","Osíris é o deus do julgamento, do além e da vegetação, sendo considerado um dos mais importantes e populares da mitologia egípcia. Os cultos a Osíris eram muito comuns e são registrados a partir de 2400 a.C. Por esse motivo, diversos templos foram erigidos em sua homenagem.":"أوزوريس هو إله الحساب والعالم الآخر والنبات، ويُعدّ من أهم الآلهة وأكثرها شعبية في الأساطير المصرية. كانت عبادته واسعة الانتشار، وتعود السجلات عنها إلى نحو 2400 قبل الميلاد. وقد شُيّدت معابد كثيرة تكريمًا له.","🎥 Vídeo Sobre o Egito":"🎥 فيديو عن مصر","🖼️ Galeria do Egito":"🖼️ معرض مصر","✍️ Nome em Hieróglifos":"✍️ الاسم بالهيروغليفية","Digite seu nome...":"اكتب اسمك...","Traduzir ⚡":"ترجم ⚡","☀️ Antigo Egito ☀️":"☀️ مصر القديمة ☀️","Site criado em HTML + Tailwind CSS":"موقع تم إنشاؤه باستخدام HTML وTailwind CSS","Entre em Contato":"اتصل بنا","Nome":"الاسم","Seu nome completo":"اسمك الكامل","Email":"البريد الإلكتروني","Mensagem":"الرسالة","Escreva sua mensagem aqui...":"اكتب رسالتك هنا...","Enviar Mensagem":"إرسال الرسالة","Informações":"معلومات"}};
+const originalTextNodes = [];
+const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+while (walker.nextNode()) {
+  const node = walker.currentNode;
+  const original = node.nodeValue;
+  const normalized = original.replace(/\s+/g, " ").trim();
+  if (normalized && Object.prototype.hasOwnProperty.call(siteTranslations.pt, normalized)) {
+    originalTextNodes.push({ node, original, key: normalized });
+  }
+}
+
+const originalAttributes = [];
+document.querySelectorAll("[placeholder]").forEach(el => {
+  const value = el.getAttribute("placeholder");
+  if (Object.prototype.hasOwnProperty.call(siteTranslations.pt, value)) {
+    originalAttributes.push({ el, attr: "placeholder", key: value });
+  }
+});
+document.title = "Antigo Egito";
+
+function setLanguage(lang) {
+  const dictionary = siteTranslations[lang] || siteTranslations.pt;
+  originalTextNodes.forEach(item => {
+    const translated = dictionary[item.key] || item.key;
+    const leading = item.original.match(/^\s*/)[0];
+    const trailing = item.original.match(/\s*$/)[0];
+    item.node.nodeValue = leading + translated + trailing;
+  });
+  originalAttributes.forEach(item => {
+    item.el.setAttribute(item.attr, dictionary[item.key] || item.key);
+  });
+  document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  if (lang === "ar") {
+    document.body.style.textAlign = "right";
+  } else {
+    document.body.style.textAlign = "";
+  }
+  const titleMap = {
+    pt: "Antigo Egito", en: "Ancient Egypt", es: "Antiguo Egipto",
+    fr: "Égypte ancienne", de: "Altes Ägypten", it: "Antico Egitto",
+    ja: "古代エジプト", zh: "古埃及", ru: "Древний Египет", ar: "مصر القديمة"
+  };
+  document.title = titleMap[lang] || titleMap.pt;
+}
+document.getElementById("languageSelector").addEventListener("change", event => {
+  setLanguage(event.target.value);
+});
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "O Império do Egito: Prova dos Deuses",
+  "description": "Jogo 2D de ação e mistério no Antigo Egito: forje seu cartucho em hieróglifos e supere as cinco câmaras sagradas de Bastet, Anúbis, Osíris, Hórus e Rá.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
