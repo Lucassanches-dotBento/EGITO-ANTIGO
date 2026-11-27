@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { soundEngine } from './audio';
 import { CHAMBERS, ChamberDef, GodId, GODS, letterToHieroglyph, RelicOption } from './data';
 import {
@@ -229,6 +233,9 @@ export class PyramidGameEngine {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private envRT: THREE.WebGLRenderTarget;
+  private composer: EffectComposer | null = null;
+  private composerRT: THREE.WebGLRenderTarget | null = null;
+  private bloomPass: UnrealBloomPass | null = null;
   private textures: TextureBundle;
   private scenery: SceneryBundle;
   private isSoftwareGl: boolean;
@@ -540,6 +547,20 @@ export class PyramidGameEngine {
     this.scene.add(this.particleMesh);
 
     if (!this.isSoftwareGl) {
+      const pixelRatio = this.renderer.getPixelRatio();
+      this.composerRT = new THREE.WebGLRenderTarget(
+        Math.max(1, Math.floor(width * pixelRatio)),
+        Math.max(1, Math.floor(height * pixelRatio)),
+        {
+          type: THREE.HalfFloatType,
+          samples: 4,
+        }
+      );
+      this.composer = new EffectComposer(this.renderer, this.composerRT);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
+      this.bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 0.34, 0.52, 0.92);
+      this.composer.addPass(this.bloomPass);
+      this.composer.addPass(new OutputPass());
       this.renderer.compile(this.scene, this.camera);
     }
 
@@ -558,6 +579,12 @@ export class PyramidGameEngine {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
+    if (this.composer) {
+      this.composer.setSize(width, height);
+    }
+    if (this.bloomPass) {
+      this.bloomPass.resolution.set(width, height);
+    }
   };
 
   private bindEvents() {
@@ -631,6 +658,8 @@ export class PyramidGameEngine {
       this.scene.remove(ft.sprite);
     }
 
+    this.composer?.dispose();
+    this.composerRT?.dispose();
     this.envRT.dispose();
     this.renderer.dispose();
     if (this.renderer.domElement.parentNode === this.container) {
@@ -821,13 +850,20 @@ export class PyramidGameEngine {
     const god = GODS[def.godId];
     this.rimLight.color.set(god.secondaryColor);
 
-    const chamberFogColors = [0x140d07, 0x100e1b, 0x091614, 0x0a1320, 0x1a0e05];
-    const fogHex = chamberFogColors[idx] ?? 0x140d07;
+    const chamberFogColors = [0x26170c, 0x171426, 0x0d211d, 0x0e1a2b, 0x2b1507];
+    const zenithColors = [0x090b1a, 0x080716, 0x051214, 0x060d1c, 0x140804];
+    const glowColors = [0xd97706, 0x6366f1, 0x10b981, 0x38bdf8, 0xf59e0b];
+
+    const fogHex = chamberFogColors[idx] ?? 0x26170c;
     this.fog.color.setHex(fogHex);
     (this.scene.background as THREE.Color).setHex(fogHex);
 
-    const floorTints = [0xc99c62, 0xa892a8, 0x7cb0a0, 0x8ea9c4, 0xd19a52];
-    this.scenery.floorMat.color.setHex(floorTints[idx] ?? 0xc99c62);
+    this.scenery.skyUniforms.uZenithColor.value.setHex(zenithColors[idx] ?? 0x090b1a);
+    this.scenery.skyUniforms.uHorizonColor.value.setHex(fogHex);
+    this.scenery.skyUniforms.uGlowColor.value.setHex(glowColors[idx] ?? 0xd97706);
+
+    const floorTints = [0xd4a66a, 0xb59eb5, 0x8cc0af, 0x9bb5cf, 0xdca55c];
+    this.scenery.floorMat.color.setHex(floorTints[idx] ?? 0xd4a66a);
   }
 
   private clearChamberVisuals() {
@@ -1282,7 +1318,11 @@ export class PyramidGameEngine {
 
       this.update(dt, now);
       if (!this.contextLost) {
-        this.renderer.render(this.scene, this.camera);
+        if (this.composer && !this.isSoftwareGl) {
+          this.composer.render();
+        } else {
+          this.renderer.render(this.scene, this.camera);
+        }
       }
 
       if (this.isSoftwareGl) {
@@ -1302,15 +1342,30 @@ export class PyramidGameEngine {
   private update(dt: number, nowMs: number) {
     this.worldTime += dt;
 
-    // Animate flickering torch braziers and twinkling night stars in every mode
+    // Animate Nile oasis water normal ripples & desert breeze palm fronds
+    this.textures.waterNormal.offset.x = (this.textures.waterNormal.offset.x + dt * 0.032) % 1;
+    this.textures.waterNormal.offset.y = (this.textures.waterNormal.offset.y + dt * 0.085) % 1;
+
+    for (let i = 0; i < this.scenery.palmCrowns.length; i++) {
+      const crown = this.scenery.palmCrowns[i];
+      crown.rotation.z = Math.sin(this.worldTime * 1.4 + i * 1.3) * 0.055;
+      crown.rotation.x = Math.cos(this.worldTime * 1.1 + i) * 0.04;
+    }
+
+    // Animate flickering torch braziers & real fire PointLights
     for (let i = 0; i < this.scenery.braziers.length; i++) {
       const b = this.scenery.braziers[i];
       const f = 0.88 + Math.sin(this.worldTime * 11 + i * 1.9) * 0.16 + Math.cos(this.worldTime * 17 + i) * 0.08;
       b.flameOuter.scale.set(0.95 + (f - 1) * 0.3, f, 0.95 + (f - 1) * 0.3);
       b.flameInner.scale.set(1, 0.9 + (f - 0.85) * 0.4, 1);
-      b.emberMat.emissiveIntensity = 1.8 + f * 0.6;
+      b.emberMat.emissiveIntensity = 1.9 + f * 0.7;
+      if (b.fireLight) {
+        b.fireLight.intensity = 3.2 + f * 1.4;
+      }
     }
     this.scenery.starField.rotation.y += dt * 0.008;
+    this.scenery.dustField.rotation.y += dt * 0.018;
+    this.scenery.dustField.position.y = Math.sin(this.worldTime * 0.7) * 0.25;
 
     // Title Menu sweeping monumental temple flyby
     if (this.mode === 'TITLE_MENU') {
@@ -1322,6 +1377,7 @@ export class PyramidGameEngine {
       this.explorerVisual.group.position.set(0, 0, 10.5);
       this.explorerVisual.group.rotation.y = Math.PI;
       this.explorerVisual.scepterCrystal.rotation.y = this.worldTime * 2.2;
+      this.explorerVisual.cape.rotation.x = 0.22 + Math.sin(this.worldTime * 2.4) * 0.05;
       this.updateParticlesAndVisualFx(dt);
       return;
     }
@@ -1683,6 +1739,8 @@ export class PyramidGameEngine {
     ev.rightLeg.rotation.x = -swing;
     ev.leftArm.rotation.x = -swing * 0.75;
     ev.rightArm.rotation.x = swing * 0.45 + (this.pulseCooldown > 0.2 ? -0.9 : 0);
+    ev.cape.rotation.x =
+      0.2 + moveFactor * 0.48 + (this.dashTimer > 0 ? 0.35 : 0) + Math.sin(this.worldTime * 8) * 0.05;
     ev.scepterCrystal.rotation.y += dt * 3.2;
 
     // Hit flash / invulnerability blink
@@ -2247,6 +2305,11 @@ export class PyramidGameEngine {
           ev.coreMesh.rotation.y += dt * 3.5;
           if (ev.ringMesh) {
             ev.ringMesh.rotation.z += dt * (e.hp <= e.maxHp * 0.5 ? 4.2 : 1.8);
+          }
+          if (ev.tailSegments) {
+            for (let s = 0; s < ev.tailSegments.length; s++) {
+              ev.tailSegments[s].position.x = Math.sin(this.worldTime * 5.2 - s * 0.95) * (0.22 + s * 0.14);
+            }
           }
           ev.bodyPivot.position.y = Math.sin(this.worldTime * 3.2) * 0.18;
         }
