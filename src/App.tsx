@@ -6,7 +6,7 @@ import {
   signOut,
   User,
 } from 'firebase/auth';
-import { BookOpen, LogIn, Pause, ShieldCheck, UserCircle2, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, Eye, LogIn, Pause, ShieldCheck, UserCircle2, Volume2, VolumeX } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AdminPanelModal } from './components/AdminPanelModal';
 import { AuthScreen, EMAIL_LINK_STORAGE_KEY } from './components/AuthScreen';
@@ -128,8 +128,9 @@ function TitleEmblemSvg() {
 }
 
 export default function App() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
   const engineRef = useRef<PyramidGameEngine | null>(null);
+  const [webglLost, setWebglLost] = useState(false);
 
   const [authReady, setAuthReady] = useState(false);
   const [authUser, setAuthUser] = useState<User | null>(null);
@@ -365,10 +366,10 @@ export default function App() {
     }
   }, []);
 
-  // Mount Canvas Engine once
+  // Mount 3D Three.js Engine once
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = viewportRef.current;
+    if (!container) return;
 
     const persistRun = (score: number, chambersCleared: number, combos: number, victory: boolean) => {
       const activeServerToken = serverTokenRef.current;
@@ -404,7 +405,7 @@ export default function App() {
       }
     };
 
-    const engine = new PyramidGameEngine(canvas, {
+    const engine = new PyramidGameEngine(container, {
       onHudUpdate: (snap) => setHud(snap),
       onChamberClear: (chamberIndex, score, combos) => {
         setEndStats({
@@ -445,6 +446,7 @@ export default function App() {
           setMode('PLAYING');
         }
       },
+      onWebGLContextLost: () => setWebglLost(true),
     });
 
     engineRef.current = engine;
@@ -494,12 +496,25 @@ export default function App() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#090704] select-none">
-      {/* Isolated 60fps Canvas Viewport */}
-      <canvas
-        ref={canvasRef}
-        className="block h-full w-full cursor-crosshair"
+      {/* Isolated 3D WebGL Viewport */}
+      <div
+        ref={viewportRef}
+        className="h-full w-full cursor-crosshair"
         aria-label={t.gameTitle}
       />
+
+      {webglLost && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#090704]/95 p-6 text-center">
+          <div className="max-w-md rounded-xl border border-amber-500/40 bg-[#120C06] p-6 text-amber-100">
+            <p className="font-display text-lg font-bold text-amber-300">{t.gameTitle}</p>
+            <p className="mt-2 text-sm text-amber-100/80">
+              {lang === 'pt'
+                ? 'O contexto 3D WebGL foi interrompido. Recarregue a página para continuar.'
+                : 'The 3D WebGL context was interrupted. Reload the page to continue.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* DEDICATED SIGNUP & LOGIN PAGE */}
       {showAuthScreen && (
@@ -745,6 +760,16 @@ export default function App() {
                 <div className="font-mono-tabular text-xs font-bold text-amber-300">
                   {hud.divineEnergy >= 100 ? t.ready : `${hud.divineEnergy}%`}
                 </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => engineRef.current?.toggleCameraView()}
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/30 bg-[#120C06]/92 text-amber-200 hover:border-amber-400/60 transition-colors cursor-pointer"
+                title="Alternar Câmera 3D (V)"
+                aria-label="Camera View"
+              >
+                <Eye className="h-4 w-4" />
               </button>
 
               <button

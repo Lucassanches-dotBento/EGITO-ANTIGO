@@ -458,7 +458,7 @@ export const UI_TEXT: Record<
     startButton: 'Iniciar Expedição',
     codexButton: 'Códice dos Deuses',
     controlsHint:
-      'WASD / Setas Mover · Espaço / Clique Pulso Solar · Shift Esquiva · E Poder Divino · Esc Pausar',
+      'WASD / Setas Mover · Espaço / Clique Pulso Solar · Shift Esquiva · E Poder Divino · V Câmera 3D · Esc Pausar',
     chamberProgress: 'Câmara',
     scoreLabel: 'Ma’at',
     divinePower: 'Poder Divino (E)',
@@ -496,7 +496,7 @@ export const UI_TEXT: Record<
     startButton: 'Start Expedition',
     codexButton: 'Codex of the Gods',
     controlsHint:
-      'WASD / Arrows Move · Space / Click Solar Pulse · Shift Dash · E Divine Power · Esc Pause',
+      'WASD / Arrows Move · Space / Click Solar Pulse · Shift Dash · E Divine Power · V 3D Camera · Esc Pause',
     chamberProgress: 'Chamber',
     scoreLabel: 'Ma’at',
     divinePower: 'Divine Power (E)',
@@ -534,7 +534,7 @@ export const UI_TEXT: Record<
     startButton: 'Iniciar Expedición',
     codexButton: 'Códice de los Dioses',
     controlsHint:
-      'WASD / Flechas Mover · Espacio / Clic Pulso Solar · Shift Impulso · E Poder Divino · Esc Pausa',
+      'WASD / Flechas Mover · Espacio / Clic Pulso Solar · Shift Impulso · E Poder Divino · V Cámara 3D · Esc Pausa',
     chamberProgress: 'Cámara',
     scoreLabel: 'Ma’at',
     divinePower: 'Poder Divino (E)',
